@@ -1,0 +1,195 @@
+{% load static %}
+<!-- Find Developers Modal -->
+<div class="custom-modal-backdrop" id="findDevelopersModal" tabindex="-1" role="dialog" aria-labelledby="findDevsModalTitle" aria-hidden="true">
+  <div class="custom-modal custom-modal-xl" role="document">
+    
+    <!-- Modal Header (Centered & Spacious) -->
+    <div class="custom-modal-header py-4 px-4 text-center d-flex flex-column align-items-center position-relative">
+      <div class="header-text-wrapper text-center w-100 pe-4 ps-4">
+        <h3 class="custom-modal-title fs-4 fw-bold mb-1" id="findDevsModalTitle">
+          <i class="bi bi-person-plus-fill text-primary me-2"></i>Find Developers
+        </h3>
+        <p class="custom-modal-subtitle text-muted mb-0">Connect with developers and grow your professional network.</p>
+      </div>
+      <button type="button" class="custom-modal-close position-absolute top-0 end-0 m-3" onclick="closeFindDevelopersModal()" aria-label="Close modal">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="custom-modal-body p-4">
+      
+      <!-- Direct Invitation Form -->
+      <section class="modal-section modal-invite-section mb-4 p-4">
+        <h4 class="modal-section-title fw-bold mb-3"><i class="bi bi-send text-primary me-2"></i>Send Direct Invitation</h4>
+        <form method="post" action="{% url 'send_invitation' %}" class="direct-invite-form">
+          {% csrf_token %}
+          <div class="row g-3 align-items-end">
+            <div class="col-lg-4 col-md-5">
+              <label class="form-label fw-semibold small text-muted mb-1">Developer Username</label>
+              <div class="input-group">
+                <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-at text-primary"></i></span>
+                <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="e.g. alex_dev" required style="height:42px; font-size:0.9rem;">
+              </div>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label class="form-label fw-semibold small text-muted mb-1">Personal Message <span class="text-muted fw-normal">(optional)</span></label>
+              <input type="text" name="message" class="form-control" placeholder="Hi! I'd love to connect on DevLink..." style="height:42px; font-size:0.9rem;">
+            </div>
+            <div class="col-lg-3 col-md-3">
+              <button type="submit" class="dl-btn dl-btn-primary w-100 fw-semibold" style="height:42px; font-size:0.9rem;">
+                <i class="bi bi-send-fill me-1"></i> Send Invitation
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Recommended Developers Section -->
+      {% if discover_users %}
+      <section class="modal-section modal-discover-section p-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+          <h4 class="modal-section-title fw-bold mb-0"><i class="bi bi-stars text-warning me-2"></i>Recommended Developers</h4>
+          
+          <!-- Filter Controls Bar inside Modal -->
+          <div class="d-flex align-items-center gap-2" style="max-width: 500px; width: 100%;">
+            <!-- Search Input -->
+            <div class="input-group input-group-sm flex-grow-1">
+              <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="search" id="modal-dev-search" class="form-control form-control-sm border-start-0 ps-0" placeholder="Search name or skill..." style="height:36px; font-size:0.85rem;">
+            </div>
+            
+            <!-- Role Filter -->
+            <select id="modal-dev-role" class="form-select form-select-sm" style="width: 120px; height:36px; font-size:0.85rem;" aria-label="Filter by Role">
+              <option value="all" selected>All Roles</option>
+              <option value="fullstack">Full-Stack</option>
+              <option value="frontend">Frontend</option>
+              <option value="backend">Backend</option>
+              <option value="mobile">Mobile</option>
+              <option value="devops">DevOps</option>
+            </select>
+
+            <!-- Location Filter -->
+            <select id="modal-dev-loc" class="form-select form-select-sm" style="width: 120px; height:36px; font-size:0.85rem;" aria-label="Filter by Location">
+              <option value="all" selected>All Locations</option>
+              <option value="remote">Remote</option>
+              <option value="worldwide">Worldwide</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Scrollable Recommended List -->
+        <div class="modal-dev-list-scrollable" id="modal-dev-list">
+          {% for d_user in discover_users %}
+          <div class="modal-dev-card" 
+               data-name="{{ d_user.get_full_name|default:d_user.username|lower }}" 
+               data-username="{{ d_user.username|lower }}" 
+               data-role="{{ d_user.job_title|lower }}"
+               data-location="{{ d_user.profile.location|default:'remote'|lower }}"
+               onclick="if(!event.target.closest('button, form, a')) { window.location.href='{% url 'accounts:profile' d_user.username %}'; }"
+               style="cursor: pointer;"
+               title="View profile of {{ d_user.username }}">
+            
+            <div class="modal-dev-card-body d-flex align-items-center gap-3">
+              <div class="modal-dev-avatar-wrapper position-relative">
+                <img src="{{ d_user.avatar_url }}" alt="{{ d_user.username }}" class="modal-dev-avatar">
+                <span class="status-dot-online"></span>
+              </div>
+              
+              <div class="modal-dev-details flex-grow-1">
+                <!-- Row 1: Name, Username, Role Badge -->
+                <div class="modal-dev-header-line d-flex align-items-center gap-2 flex-wrap mb-1">
+                  <span class="modal-dev-name fw-bold">{{ d_user.get_full_name|default:d_user.username }}</span>
+                  <span class="modal-dev-handle text-muted">@{{ d_user.username }}</span>
+                  <span class="modal-dev-badge"><i class="bi bi-briefcase me-1"></i>{{ d_user.job_title }}</span>
+                </div>
+
+                <!-- Row 2: Mutual Connections & Location -->
+                <div class="modal-dev-meta-line d-flex align-items-center gap-2 flex-wrap">
+                  <span class="modal-dev-mutual"><i class="bi bi-people me-1"></i>Mutual connection</span>
+                  <span class="modal-dev-location"><i class="bi bi-geo-alt me-1"></i>{{ d_user.profile.location|default:"Remote" }}</span>
+                </div>
+
+                <!-- Row 3: Bio / Tagline -->
+                <div class="modal-dev-bio-line text-muted small mt-1">
+                  {% if d_user.profile.bio %}
+                    {{ d_user.profile.bio }}
+                  {% else %}
+                    Software developer building modern web applications on DevLink.
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-dev-card-action ms-3">
+              <form method="post" action="{% url 'send_invitation' %}" style="margin:0;" onclick="event.stopPropagation();">
+                {% csrf_token %}
+                <input type="hidden" name="username" value="{{ d_user.username }}">
+                <button type="submit" class="btn btn-sm btn-primary rounded-pill fw-semibold modal-connect-btn">
+                  <i class="bi bi-person-plus-fill me-1"></i> Connect
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+          
+          <div id="modal-no-results" class="text-center py-4 text-muted d-none">
+            <i class="bi bi-search fs-3 text-secondary d-block mb-2"></i>
+            <p class="small mb-0">No developers match your search or filter criteria.</p>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const modalSearch = document.getElementById('modal-dev-search');
+  const roleSelect = document.getElementById('modal-dev-role');
+  const locSelect = document.getElementById('modal-dev-loc');
+  const devList = document.getElementById('modal-dev-list');
+  const noResults = document.getElementById('modal-no-results');
+
+  if (devList) {
+    function filterModalDevs() {
+      const q = modalSearch ? modalSearch.value.toLowerCase().trim() : '';
+      const selectedRole = roleSelect ? roleSelect.value.toLowerCase() : 'all';
+      const selectedLoc = locSelect ? locSelect.value.toLowerCase() : 'all';
+
+      const cards = devList.querySelectorAll('.modal-dev-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const name = card.dataset.name || '';
+        const username = card.dataset.username || '';
+        const role = card.dataset.role || '';
+        const location = card.dataset.location || '';
+
+        const matchesSearch = !q || name.includes(q) || username.includes(q) || role.includes(q);
+        const matchesRole = selectedRole === 'all' || role.includes(selectedRole);
+        const matchesLoc = selectedLoc === 'all' || location.includes(selectedLoc);
+
+        if (matchesSearch && matchesRole && matchesLoc) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        if (visibleCount === 0 && cards.length > 0) {
+          noResults.classList.remove('d-none');
+        } else {
+          noResults.classList.add('d-none');
+        }
+      }
+    }
+
+    if (modalSearch) modalSearch.addEventListener('input', filterModalDevs);
+    if (roleSelect) roleSelect.addEventListener('change', filterModalDevs);
+    if (locSelect) locSelect.addEventListener('change', filterModalDevs);
+  }
+});
+</script>

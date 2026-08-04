@@ -848,6 +848,12 @@
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.custom-modal.custom-modal-lg,
+.custom-modal.custom-modal-xl {
+  max-width: 850px !important;
+  width: 94%;
+}
+
 .custom-modal-backdrop.show .custom-modal {
   transform: translateY(0) scale(1);
 }

@@ -292,53 +292,7 @@
   </section>
 </main>
 
-<!-- Find Developers Modal -->
-<div class="custom-modal-backdrop" id="findDevelopersModal">
-  <div class="custom-modal">
-    <div class="custom-modal-header">
-      <h3 class="custom-modal-title"><i class="bi bi-person-plus text-primary me-2"></i>Find Developers</h3>
-      <button type="button" class="custom-modal-close" onclick="closeFindDevelopersModal()">&times;</button>
-    </div>
-    <div class="custom-modal-body">
-      <form method="post" action="{% url 'send_invitation' %}" class="mb-4">
-        {% csrf_token %}
-        <label class="form-label fw-semibold small text-muted mb-2">Send Invitation by Username</label>
-        <div class="input-group mb-2">
-          <span class="input-group-text bg-body"><i class="bi bi-at"></i></span>
-          <input type="text" name="username" class="form-control" placeholder="e.g. jane_doe" required>
-        </div>
-        <textarea name="message" class="form-control mb-3" rows="2" placeholder="Personal message (optional)"></textarea>
-        <button type="submit" class="dl-btn dl-btn-primary w-100">
-          <i class="bi bi-send-fill"></i> Send Invitation
-        </button>
-      </form>
-
-      {% if discover_users %}
-      <div class="mt-4">
-        <h5 class="fw-bold fs-6 mb-3 text-muted uppercase">Recommended Developers</h5>
-        {% for d_user in discover_users %}
-        <div class="discover-user-item">
-          <div class="d-flex align-items-center gap-3">
-            <img src="{{ d_user.avatar_url }}" alt="{{ d_user.username }}" class="rounded-circle" width="42" height="42">
-            <div>
-              <div class="fw-bold text-body" style="font-size:0.95rem;">{{ d_user.get_full_name|default:d_user.username }}</div>
-              <div class="text-muted small">@{{ d_user.username }} &bull; {{ d_user.job_title }}</div>
-            </div>
-          </div>
-          <form method="post" action="{% url 'send_invitation' %}" style="margin:0;">
-            {% csrf_token %}
-            <input type="hidden" name="username" value="{{ d_user.username }}">
-            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-              <i class="bi bi-plus-lg"></i> Connect
-            </button>
-          </form>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
+{% include 'opportunities/find_developers_modal.html' %}
 {% endblock %}
 
 {% block extra_js %}
