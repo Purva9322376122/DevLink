@@ -81,10 +81,19 @@ def render_markdown(text: str) -> str:
     """
     Render Markdown to safe HTML.
     Supports fenced code blocks, tables, task lists.
-    Output is sanitized with bleach.
+    Output is sanitized with bleach and safe link parsing.
     """
     import markdown
     import bleach
+    import re
+
+    if not text:
+        return ''
+
+    # Clean unparsed Django template tags in raw markdown text to prevent broken links
+    text = re.sub(r'\{%\s*url\s+[\'"]accounts:profile[\'"]\s+([^\s%}]+)\s*%\}', r'/accounts/profile/\1/', text)
+    text = re.sub(r'\{%.*?%\}', '', text)
+    text = re.sub(r'\{\{.*?\}\}', '', text)
 
     ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + [
         'p', 'pre', 'code', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -112,4 +121,8 @@ def render_markdown(text: str) -> str:
             'codehilite': {'css_class': 'highlight', 'guess_lang': False},
         },
     )
-    return bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS, strip=True)
+
+    cleaned_html = bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS, strip=True)
+    # Sanitize any href containing literal {% or %7B or unescaped template tags
+    cleaned_html = re.sub(r'href="[^"]*(?:%7B|\{%|%7D|\%\})[^"]*"', 'href="#"', cleaned_html)
+    return cleaned_html
