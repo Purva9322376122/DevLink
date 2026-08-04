@@ -47,7 +47,7 @@ def signup_view(request):
         except Exception as e:
             logger.warning(f"Async email notification skipped: {e}")
 
-        login(request, user)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f"Welcome to DevLink, {user.username}!")
         return redirect('dashboard:dashboard')
 

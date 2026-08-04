@@ -1,42 +1,247 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/applications.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="app-dashboard-container">
 
-<div class="max-w-4xl mx-auto mt-8">
-    <h1 class="text-2xl font-bold mb-6">My Applications</h1>
+    <!-- PAGE HEADER -->
+    <div class="app-header">
+        <h1 class="app-title">My Applications</h1>
+        <p class="app-subtitle">Track and manage all the opportunities you've applied for.</p>
+    </div>
 
-    {% if applications %}
-        <div class="space-y-4">
-            {% for app in applications %}
-            <div class="bg-white p-5 rounded-xl border shadow-sm">
+    <!-- MAIN DASHBOARD GRID -->
+    <div class="app-dashboard-grid">
 
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-semibold">
-                        {{ app.opportunity.title }}
-                    </h2>
+        <!-- LEFT COLUMN (70% WIDTH) -->
+        <div class="app-main-col">
 
-                    {% if app.status == "pending" %}
-                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">Pending</span>
-                    {% elif app.status == "accepted" %}
-                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Accepted</span>
-                    {% elif app.status == "rejected" %}
-                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">Rejected</span>
-                    {% endif %}
+            <!-- HORIZONTAL STATUS FILTER TABS -->
+            <div class="app-tabs" role="tablist" aria-label="Application status filters">
+                <a href="?status=all" class="app-tab-btn {% if selected_status == 'all' %}active{% endif %}">
+                    All <span class="app-tab-badge">{{ all_apps_count }}</span>
+                </a>
+                <a href="?status=applied" class="app-tab-btn {% if selected_status == 'applied' or selected_status == 'pending' %}active{% endif %}">
+                    Applied <span class="app-tab-badge">{{ pending_count }}</span>
+                </a>
+                <a href="?status=review" class="app-tab-btn {% if selected_status == 'review' %}active{% endif %}">
+                    Under Review <span class="app-tab-badge">0</span>
+                </a>
+                <a href="?status=shortlisted" class="app-tab-btn {% if selected_status == 'shortlisted' or selected_status == 'accepted' %}active{% endif %}">
+                    Shortlisted <span class="app-tab-badge">{{ accepted_count }}</span>
+                </a>
+                <a href="?status=rejected" class="app-tab-btn {% if selected_status == 'rejected' %}active{% endif %}">
+                    Rejected <span class="app-tab-badge">{{ rejected_count }}</span>
+                </a>
+            </div>
+
+            <!-- APPLICATION CARDS LIST -->
+            {% if applications %}
+                <div class="app-cards-list">
+                    {% for app in applications %}
+                        <div class="app-card">
+                            
+                            <!-- CARD HEADER (COMPANY LOGO, JOB TITLE, CREATOR, STATUS BADGE) -->
+                            <div class="app-card-header">
+                                <div class="app-company-info">
+                                    <div class="app-company-logo" aria-hidden="true">
+                                        {{ app.opportunity.title|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <h2 class="app-job-title">
+                                            <a href="{% url 'opportunity_detail' id=app.opportunity.id %}">
+                                                {{ app.opportunity.title }}
+                                            </a>
+                                        </h2>
+                                        <div class="app-company-name">
+                                            <span>Posted by {{ app.opportunity.user.username }}</span>
+                                            <i class="bi bi-patch-check-fill verified-badge" title="Verified Opportunity"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- STATUS BADGE -->
+                                <div>
+                                    {% if app.status == "pending" %}
+                                        <span class="app-status-badge status-pending">
+                                            <i class="bi bi-clock-history"></i> Applied
+                                        </span>
+                                    {% elif app.status == "accepted" %}
+                                        <span class="app-status-badge status-accepted">
+                                            <i class="bi bi-check-circle-fill"></i> Shortlisted
+                                        </span>
+                                    {% elif app.status == "rejected" %}
+                                        <span class="app-status-badge status-rejected">
+                                            <i class="bi bi-x-circle-fill"></i> Rejected
+                                        </span>
+                                    {% else %}
+                                        <span class="app-status-badge status-pending">
+                                            <i class="bi bi-info-circle"></i> {{ app.status|title }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- MIDDLE METADATA BADGES -->
+                            <div class="app-meta-list">
+                                <div class="app-meta-item">
+                                    <i class="bi bi-briefcase"></i>
+                                    <span>{{ app.opportunity.required_skills|default:"Opportunity" }}</span>
+                                </div>
+                                <div class="app-meta-item">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <span>Remote / Onsite</span>
+                                </div>
+                                <div class="app-meta-item">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <span>Applied {{ app.created_at|timesince }} ago</span>
+                                </div>
+                            </div>
+
+                            <!-- SUBMITTED COVER NOTE (IF ANY) -->
+                            {% if app.message %}
+                                <div class="app-cover-note">
+                                    <div class="app-cover-label">Your Cover Note</div>
+                                    <div>"{{ app.message }}"</div>
+                                </div>
+                            {% endif %}
+
+                            <!-- CARD FOOTER (VIEW DETAILS ACTION) -->
+                            <div class="app-card-footer">
+                                <span class="text-xs text-gray-400">
+                                    Application ID #APP-{{ app.id }}
+                                </span>
+                                <a href="{% url 'opportunity_detail' id=app.opportunity.id %}" class="app-action-btn">
+                                    View Details <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    {% endfor %}
                 </div>
 
-                <p class="text-sm text-gray-600 mb-2">
-                    {{ app.message }}
-                </p>
+                <!-- PAGINATION -->
+                {% if page_obj and page_obj.has_other_pages %}
+                    <div class="app-pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}" class="app-page-btn" aria-label="Previous page">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </a>
+                        {% endif %}
 
-                <p class="text-xs text-gray-400">
-                    Applied {{ app.created_at|timesince }} ago
-                </p>
+                        {% for p in page_obj.paginator.page_range %}
+                            {% if page_obj.number == p %}
+                                <span class="app-page-btn active">{{ p }}</span>
+                            {% elif p > page_obj.number|add:"-3" and p < page_obj.number|add:"3" %}
+                                <a href="?page={{ p }}&status={{ selected_status }}" class="app-page-btn">{{ p }}</a>
+                            {% endif %}
+                        {% endfor %}
 
-            </div>
-            {% endfor %}
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}" class="app-page-btn" aria-label="Next page">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- EMPTY STATE -->
+                <div class="app-empty-card">
+                    <div class="app-empty-icon" aria-hidden="true">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <h3 class="app-empty-title">📄 No Applications Yet</h3>
+                    <p class="app-empty-sub">You haven't applied for any opportunities. Start exploring open projects, internships, and roles!</p>
+                    <a href="{% url 'opportunity_list' %}" class="app-empty-btn">
+                        <i class="bi bi-briefcase-fill"></i> Browse Opportunities
+                    </a>
+                </div>
+            {% endif %}
+
         </div>
-    {% else %}
-        <p class="text-gray-500">No applications yet.</p>
-    {% endif %}
-</div>
 
+        <!-- RIGHT SIDEBAR (30% WIDTH) -->
+        <div class="app-sidebar-col">
+
+            <!-- APPLICATION SUMMARY WIDGET -->
+            <div class="app-widget">
+                <h3 class="app-widget-title">
+                    <span><i class="bi bi-bar-chart-line-fill text-indigo-600"></i> Application Summary</span>
+                </h3>
+
+                <div class="app-summary-row">
+                    <div class="app-summary-label">
+                        <i class="bi bi-folder2-open text-blue-600"></i>
+                        <span>Total Applications</span>
+                    </div>
+                    <span class="app-summary-count">{{ all_apps_count }}</span>
+                </div>
+
+                <div class="app-summary-row">
+                    <div class="app-summary-label">
+                        <i class="bi bi-clock-history text-amber-500"></i>
+                        <span>Applied / Pending</span>
+                    </div>
+                    <span class="app-summary-count">{{ pending_count }}</span>
+                </div>
+
+                <div class="app-summary-row">
+                    <div class="app-summary-label">
+                        <i class="bi bi-search text-purple-600"></i>
+                        <span>Under Review</span>
+                    </div>
+                    <span class="app-summary-count">0</span>
+                </div>
+
+                <div class="app-summary-row">
+                    <div class="app-summary-label">
+                        <i class="bi bi-check-circle-fill text-emerald-600"></i>
+                        <span>Shortlisted</span>
+                    </div>
+                    <span class="app-summary-count">{{ accepted_count }}</span>
+                </div>
+
+                <div class="app-summary-row">
+                    <div class="app-summary-row-inner flex justify-between w-full items-center">
+                        <div class="app-summary-label">
+                            <i class="bi bi-x-circle-fill text-rose-500"></i>
+                            <span>Rejected</span>
+                        </div>
+                        <span class="app-summary-count">{{ rejected_count }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAREER TIPS WIDGET -->
+            <div class="app-widget">
+                <h3 class="app-widget-title">
+                    <span><i class="bi bi-lightbulb-fill text-amber-500"></i> Helpful Tips</span>
+                </h3>
+
+                <div class="app-tip-item">
+                    <i class="bi bi-person-check-fill text-blue-600"></i>
+                    <span><strong>Keep your profile updated</strong> with your latest skills, projects, and social links.</span>
+                </div>
+
+                <div class="app-tip-item">
+                    <i class="bi bi-bell-fill text-indigo-600"></i>
+                    <span><strong>Check application status regularly</strong> for notifications or interview invitations.</span>
+                </div>
+
+                <div class="app-tip-item">
+                    <i class="bi bi-chat-dots-fill text-emerald-600"></i>
+                    <span><strong>Follow up professionally</strong> after a few days if you haven't received a response.</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 {% endblock %}

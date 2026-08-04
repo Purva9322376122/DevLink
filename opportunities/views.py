@@ -312,10 +312,42 @@ def application_list(request):
 @login_required
 def applications(request):
     """Applicant — views their own submitted applications."""
-    apps = Application.objects.filter(
+    all_apps = Application.objects.filter(
         user=request.user
-    ).select_related('opportunity').order_by('-created_at')
-    return render(request, 'applications.html', {'applications': apps})
+    ).select_related('opportunity', 'opportunity__user', 'opportunity__user__profile').order_by('-created_at')
+
+    # Summary counts
+    total_count = all_apps.count()
+    pending_count = all_apps.filter(status='pending').count()
+    accepted_count = all_apps.filter(status='accepted').count()
+    rejected_count = all_apps.filter(status='rejected').count()
+
+    # Filter tab selection
+    selected_status = request.GET.get('status', 'all').lower()
+    if selected_status in ['pending', 'applied']:
+        filtered_apps = all_apps.filter(status='pending')
+    elif selected_status in ['accepted', 'shortlisted']:
+        filtered_apps = all_apps.filter(status='accepted')
+    elif selected_status == 'rejected':
+        filtered_apps = all_apps.filter(status='rejected')
+    else:
+        filtered_apps = all_apps
+        selected_status = 'all'
+
+    # Pagination (6 cards per page)
+    paginator = Paginator(filtered_apps, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'applications.html', {
+        'applications': page_obj,
+        'page_obj': page_obj,
+        'all_apps_count': total_count,
+        'pending_count': pending_count,
+        'accepted_count': accepted_count,
+        'rejected_count': rejected_count,
+        'selected_status': selected_status,
+    })
 
 
 @login_required
