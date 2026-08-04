@@ -871,41 +871,41 @@
 
 .modal-section {
   background: var(--card-bg, #f8fafc);
-  border-radius: 18px;
-  padding: 22px;
+  border-radius: 14px;
+  padding: 16px;
   border: 1px solid var(--border, #e2e8f0);
 }
 
 .modal-section-title {
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--text, #1e293b);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .modal-dev-list-scrollable {
-  max-height: 360px;
+  max-height: 320px;
   overflow-y: auto;
-  padding-right: 6px;
+  padding-right: 4px;
 }
 
 .modal-dev-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 18px;
-  border-radius: 16px;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
   border: 1px solid var(--border, #e2e8f0);
   background: var(--card, #ffffff);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-dev-card:hover {
   transform: translateY(-2px);
   border-color: #2563eb;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
 }
 
 .modal-dev-card-body {
