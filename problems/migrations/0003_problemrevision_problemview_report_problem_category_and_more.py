@@ -1,6 +1,5 @@
 # Generated migration — Phase 5 additions
-# Modified to handle existing Tag records by populating slugs before
-# enforcing the unique constraint.
+# PostgreSQL & SQLite compatible
 
 import django.db.models.deletion
 from django.conf import settings
@@ -84,24 +83,16 @@ class Migration(migrations.Migration):
         migrations.AddField(model_name='problem', name='view_count',
             field=models.PositiveIntegerField(db_index=True, default=0)),
 
-        # ── Tag field additions (slug non-unique first) ───────────────────
+        # ── Tag field additions ───────────────────────────────────────────
         migrations.AddField(model_name='tag', name='description',
             field=models.TextField(blank=True)),
         migrations.AddField(model_name='tag', name='slug',
-            # Start as NOT unique so existing rows can coexist
-            field=models.SlugField(blank=True, unique=False, default='')),
+            field=models.SlugField(blank=True, default='', unique=True)),
         migrations.AddField(model_name='tag', name='usage_count',
             field=models.PositiveIntegerField(db_index=True, default=0)),
 
         # ── Data migration: populate slugs ────────────────────────────────
         migrations.RunPython(populate_tag_slugs, migrations.RunPython.noop),
-
-        # ── Now enforce uniqueness ────────────────────────────────────────
-        migrations.AlterField(
-            model_name='tag',
-            name='slug',
-            field=models.SlugField(blank=True, unique=True),
-        ),
 
         # ── Alter existing fields ─────────────────────────────────────────
         migrations.AlterField(model_name='problem', name='created_at',
