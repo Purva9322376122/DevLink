@@ -1063,10 +1063,11 @@
   margin: 18px 0;
 }
 
-.filter-controls-pp {
+.filter-controls-single-line-pp {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
 }
 
 .search-box-pp {
@@ -1074,10 +1075,10 @@
   align-items: center;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 10px;
-  padding: 0 10px;
+  padding: 0 12px;
   height: 38px;
   background: var(--card, #ffffff);
-  width: 180px;
+  flex: 1;
 }
 
 .search-icon-pp {
