@@ -1,0 +1,7 @@
+{# Empty state card #}
+<div class="empty-state dl-empty-state {{ extra_class|default:'' }}">
+  {% if icon %}<div class="empty-icon">{{ icon }}</div>{% endif %}
+  {% if title %}<h3 class="empty-title">{{ title }}</h3>{% endif %}
+  {% if description %}<p class="empty-desc">{{ description }}</p>{% endif %}
+  {% block empty_actions %}{% endblock %}
+</div>

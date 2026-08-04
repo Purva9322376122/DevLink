@@ -1,0 +1,556 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Developer Dashboard — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+/* DevLink Developer Workspace Dashboard Styles */
+.dash-bg {
+  background-color: #f6f8fa;
+  min-height: 100vh;
+  padding: 32px 0;
+}
+
+.dash-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.dash-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.dash-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* SECTION 1: WELCOME HERO */
+.welcome-hero-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.welcome-text-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px 0;
+  line-height: 1.2;
+}
+
+.welcome-text-sub {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+  max-width: 620px;
+}
+
+.welcome-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* SECTION 2: QUICK STATS (5 Cards) */
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card-box {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 18px 14px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.stat-card-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.stat-box-val {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.stat-box-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* SECTION 3: MAIN TWO-COLUMN CONTENT */
+.dash-two-col {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 24px;
+}
+
+.dash-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dash-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-view-all-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.dash-view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* List Items */
+.dash-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dash-list-item:last-child {
+  border-bottom: none;
+}
+
+.dash-item-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.dash-item-title:hover {
+  color: #2563eb;
+}
+
+.dash-item-desc {
+  font-size: 13px;
+  color: #4b5563;
+  margin: 0 0 6px 0;
+}
+
+.dash-item-meta {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Contributor List */
+.contributor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.contributor-row:last-child {
+  border-bottom: none;
+}
+
+.contributor-avatar-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tag-badge-pill {
+  display: inline-block;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 4px 8px 0;
+  text-decoration: none;
+}
+
+.tag-badge-pill:hover {
+  background-color: #dbeafe;
+}
+
+/* Empty State */
+.dash-empty-box {
+  text-align: center;
+  padding: 36px 16px;
+}
+
+.dash-empty-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.dash-empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.dash-empty-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 16px 0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .dash-two-col {
+    grid-template-columns: 1fr;
+  }
+  .quick-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .quick-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .welcome-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .welcome-actions-group {
+    width: 100%;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-bg">
+  <div class="dash-container">
+
+    <!-- ===================================================================
+         SECTION 1: WELCOME HERO CARD
+         =================================================================== -->
+    <div class="dash-card">
+      <div class="welcome-hero-card">
+        <div>
+          <h1 class="welcome-text-title">Build. Solve. Collaborate.</h1>
+          <p class="welcome-text-sub">
+            Welcome back. Continue solving problems and collaborating with developers.
+          </p>
+        </div>
+
+        <div class="welcome-actions-group">
+          <a href="{% url 'create_problem' %}" class="btn btn-primary rounded-pill px-3 py-2 fw-semibold">
+            <i class="bi bi-plus-circle-fill me-1"></i>Ask Problem
+          </a>
+          <a href="{% url 'create_opportunity' %}" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold">
+            <i class="bi bi-briefcase-fill me-1"></i>Create Opportunity
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SECTION 3: MAIN CONTENT (70% Left / 30% Right)
+         =================================================================== -->
+    <div class="dash-two-col">
+
+      <!-- LEFT COLUMN (70%) -->
+      <main>
+        
+        <!-- 1. TRENDING PROBLEMS -->
+        <div class="dash-card">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title">
+              <i class="bi bi-fire text-danger me-1"></i>Trending Problems
+            </h2>
+            <a href="{% url 'problem_list' %}" class="dash-view-all-link">View all →</a>
+          </div>
+
+          <div>
+            {% if recent_problems %}
+              {% for problem in recent_problems|slice:":5" %}
+                <div class="dash-list-item">
+                  <div class="flex-grow-1">
+                    <a href="{% url 'problem_detail' problem.id %}" class="dash-item-title">{{ problem.title }}</a>
+                    <p class="dash-item-desc">{{ problem.description|truncatewords:18 }}</p>
+                    <div class="dash-item-meta">
+                      <span><i class="bi bi-person me-1"></i>{{ problem.user.username }}</span>
+                      <span>•</span>
+                      <span><i class="bi bi-calendar3 me-1"></i>{{ problem.created_at|date:"M j, Y" }}</span>
+                      <span>•</span>
+                      <span><i class="bi bi-eye me-1"></i>{{ problem.view_count|default:0 }} views</span>
+                      <span>•</span>
+                      <span><i class="bi bi-chat-left-text me-1"></i>{{ problem.solutions.count }} solutions</span>
+                    </div>
+                  </div>
+                  <div class="align-self-center flex-shrink-0 ms-2">
+                    <a href="{% url 'problem_detail' problem.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View</a>
+                  </div>
+                </div>
+              {% endfor %}
+            {% elif problems %}
+              {% for problem in problems|slice:":5" %}
+                <div class="dash-list-item">
+                  <div class="flex-grow-1">
+                    <a href="{% url 'problem_detail' problem.id %}" class="dash-item-title">{{ problem.title }}</a>
+                    <p class="dash-item-desc">{{ problem.description|truncatewords:18 }}</p>
+                    <div class="dash-item-meta">
+                      <span><i class="bi bi-person me-1"></i>{{ problem.user.username }}</span>
+                      <span>•</span>
+                      <span><i class="bi bi-calendar3 me-1"></i>{{ problem.created_at|date:"M j, Y" }}</span>
+                      <span>•</span>
+                      <span><i class="bi bi-eye me-1"></i>{{ problem.view_count|default:0 }} views</span>
+                    </div>
+                  </div>
+                  <div class="align-self-center flex-shrink-0 ms-2">
+                    <a href="{% url 'problem_detail' problem.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View</a>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="dash-empty-box">
+                <div class="dash-empty-icon">📄</div>
+                <h3 class="dash-empty-title">No recent problems</h3>
+                <p class="dash-empty-sub">Be the first to ask a problem on DevLink.</p>
+                <a href="{% url 'create_problem' %}" class="btn btn-sm btn-primary rounded-pill px-3">Ask Problem</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 2. LATEST OPPORTUNITIES -->
+        <div class="dash-card">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title">
+              <i class="bi bi-briefcase text-primary me-1"></i>Latest Opportunities
+            </h2>
+            <a href="{% url 'opportunity_list' %}" class="dash-view-all-link">View all →</a>
+          </div>
+
+          <div>
+            {% if recent_opportunities %}
+              {% for opp in recent_opportunities|slice:":5" %}
+                <div class="dash-list-item">
+                  <div class="flex-grow-1">
+                    <a href="{% url 'opportunity_detail' opp.id %}" class="dash-item-title">{{ opp.title }}</a>
+                    <div class="dash-item-meta mb-2">
+                      <span class="badge bg-light text-primary border me-1">{{ opp.opportunity_type|default:"Full-Time" }}</span>
+                      <span class="text-muted"><i class="bi bi-building me-1"></i>{{ opp.company|default:opp.user.username }}</span>
+                      <span>•</span>
+                      <span class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ opp.location|default:"Remote" }}</span>
+                    </div>
+                    <div class="dash-item-meta">
+                      <span>Posted {{ opp.created_at|date:"M j, Y" }}</span>
+                    </div>
+                  </div>
+                  <div class="align-self-center flex-shrink-0 ms-2">
+                    <a href="{% url 'opportunity_detail' opp.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="dash-empty-box">
+                <div class="dash-empty-icon">🚀</div>
+                <h3 class="dash-empty-title">No opportunities yet</h3>
+                <p class="dash-empty-sub">Discover jobs, internships, and freelance projects on DevLink.</p>
+                <a href="{% url 'create_opportunity' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Post Opportunity</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 3. RECENT ACTIVITY -->
+        {% if activity %}
+          <div class="dash-card">
+            <div class="dash-section-header">
+              <h2 class="dash-section-title">
+                <i class="bi bi-activity text-info me-1"></i>Recent Activity
+              </h2>
+            </div>
+            <div>
+              {% for event in activity|slice:":6" %}
+                <div class="dash-list-item">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="badge rounded-circle p-2 bg-light text-primary fs-6">
+                      <i class="bi {{ event.icon|default:'bi-bell' }}"></i>
+                    </div>
+                    <div>
+                      <div class="dash-item-title mb-0 fs-6">{{ event.description|safe }}</div>
+                      <div class="dash-item-meta">{{ event.timestamp|naturaltime }}</div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+      </main>
+
+      <!-- RIGHT COLUMN (30%) -->
+      <aside>
+
+        <!-- 1. TOP CONTRIBUTORS -->
+        <div class="dash-card">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title">
+              <i class="bi bi-trophy text-warning me-1"></i>Top Contributors
+            </h2>
+          </div>
+
+          <div>
+            {% if top_contributors %}
+              {% for contributor in top_contributors|slice:":5" %}
+                <div class="contributor-row">
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="https://ui-avatars.com/api/?name={{ contributor.username }}&background=2563EB&color=ffffff&size=80" alt="{{ contributor.username }}" class="contributor-avatar-img">
+                    <div>
+                      <a href="{% url 'accounts:profile' contributor.username %}" class="fw-semibold text-dark text-decoration-none d-block small">{{ contributor.username }}</a>
+                      <span class="text-muted xsmall">{{ contributor.accepted|default:0 }} accepted solutions</span>
+                    </div>
+                  </div>
+                  <a href="{% url 'accounts:profile' contributor.username %}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1 xsmall">Profile</a>
+                </div>
+              {% endfor %}
+            {% elif top_users %}
+              {% for top_user in top_users|slice:":5" %}
+                <div class="contributor-row">
+                  <div class="d-flex align-items-center gap-2">
+                    {% if top_user.profile.profile_image %}
+                      <img src="{{ top_user.profile.profile_image.url }}" alt="{{ top_user.username }}" class="contributor-avatar-img">
+                    {% else %}
+                      <img src="https://ui-avatars.com/api/?name={{ top_user.username }}&background=2563EB&color=ffffff&size=80" alt="{{ top_user.username }}" class="contributor-avatar-img">
+                    {% endif %}
+                    <div>
+                      <a href="{% url 'accounts:profile' top_user.username %}" class="fw-semibold text-dark text-decoration-none d-block small">{{ top_user.username }}</a>
+                      <span class="text-muted xsmall">{{ top_user.total_solutions|default:0 }} solutions</span>
+                    </div>
+                  </div>
+                  <a href="{% url 'accounts:profile' top_user.username %}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1 xsmall">Profile</a>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="dash-empty-box py-3">
+                <p class="dash-empty-sub mb-0">No top contributors yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 2. TRENDING TAGS -->
+        <div class="dash-card">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title">
+              <i class="bi bi-tags text-success me-1"></i>Trending Tags
+            </h2>
+          </div>
+          <div>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#Python</a>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#Django</a>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#React</a>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#C++</a>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#AI</a>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#JavaScript</a>
+            <a href="{% url 'problem_list' %}" class="tag-badge-pill">#PostgreSQL</a>
+          </div>
+        </div>
+
+        <!-- 3. LATEST SOLUTIONS -->
+        <div class="dash-card">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title">
+              <i class="bi bi-lightbulb text-info me-1"></i>Latest Solutions
+            </h2>
+          </div>
+          <div>
+            {% if recent_solutions %}
+              {% for sol in recent_solutions|slice:":5" %}
+                <div class="dash-list-item">
+                  <div>
+                    <a href="{% url 'problem_detail' sol.problem.id %}" class="fw-semibold text-dark text-decoration-none small d-block mb-1">{{ sol.problem.title }}</a>
+                    <div class="dash-item-meta">
+                      <span>by {{ sol.user.username }}</span>
+                      <span>•</span>
+                      <span>{{ sol.votes.count|default:0 }} votes</span>
+                    </div>
+                  </div>
+                  {% if sol.is_accepted %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill xsmall">✓ Accepted</span>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% elif solutions %}
+              {% for sol in solutions|slice:":5" %}
+                <div class="dash-list-item">
+                  <div>
+                    <a href="{% url 'problem_detail' sol.problem.id %}" class="fw-semibold text-dark text-decoration-none small d-block mb-1">{{ sol.problem.title }}</a>
+                    <div class="dash-item-meta">
+                      <span>by {{ sol.user.username }}</span>
+                      <span>•</span>
+                      <span>{{ sol.votes.count|default:0 }} votes</span>
+                    </div>
+                  </div>
+                  {% if sol.is_accepted %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill xsmall">✓ Accepted</span>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="dash-empty-box py-3">
+                <p class="dash-empty-sub mb-0">No solutions submitted yet.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

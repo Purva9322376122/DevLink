@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="auth-viewport">
+  <section class="dl-card auth-card" role="region" aria-labelledby="signup-heading">
+
+    <div class="text-center mb-3">
+      <a href="/" class="dl-brand" aria-label="DevLink home">
+        <span class="dl-logo"><i class="bi bi-code-slash"></i></span>
+            <span class="dl-title">DevLink</span>
+      </a>
+    </div>
+
+    <h1 id="signup-heading" class="auth-title text-center">Create your account</h1>
+    <p class="auth-sub text-center">Join the DevLink developer community.</p>
+
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="POST" class="auth-form" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="id_full_name" class="dl-form-label">Full Name</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-person"></i></span>
+          <input id="id_full_name" name="full_name" type="text" class="dl-form-input form-input" placeholder="Your full name" aria-label="Full name">
+        </div>
+        {% if form and form.full_name.errors %}
+          <div class="input-error">{{ form.full_name.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_username" class="dl-form-label">Username</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-at"></i></span>
+          <input id="id_username" name="username" type="text" class="dl-form-input form-input" placeholder="username" required aria-required="true">
+        </div>
+        {% if form and form.username.errors %}
+          <div class="input-error">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_email" class="dl-form-label">Email</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-envelope"></i></span>
+          <input id="id_email" name="email" type="email" class="dl-form-input form-input" placeholder="you@example.com" required aria-required="true">
+        </div>
+        {% if form and form.email.errors %}
+          <div class="input-error">{{ form.email.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_password" class="dl-form-label">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-lock"></i></span>
+          <input id="id_password" name="password" type="password" class="dl-form-input form-input password-field" placeholder="Create a password" required aria-required="true">
+          <button type="button" class="password-toggle dl-icon-btn" aria-label="Toggle password visibility" data-target="#id_password"><i class="bi bi-eye-slash" aria-hidden="true"></i></button>
+        </div>
+        {% if form and form.password.errors %}
+          <div class="input-error">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_confirm_password" class="dl-form-label">Confirm Password</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-lock"></i></span>
+          <input id="id_confirm_password" name="confirm_password" type="password" class="dl-form-input form-input password-field" placeholder="Confirm password" required aria-required="true">
+          <button type="button" class="password-toggle dl-icon-btn" aria-label="Toggle password visibility" data-target="#id_confirm_password"><i class="bi bi-eye-slash" aria-hidden="true"></i></button>
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <button type="submit" class="dl-btn dl-btn-primary w-100" style="height:48px;border-radius:10px;">Create Account</button>
+      </div>
+
+      <div class="auth-footer text-center">Already have an account? <a href="{% url 'accounts:login' %}">Login</a></div>
+
+    </form>
+  </section>
+</main>
+
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

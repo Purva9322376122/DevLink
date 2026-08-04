@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Report Queue{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">
+    <i class="bi bi-flag-fill text-danger me-2"></i>Moderation Queue
+  </h2>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link {% if status_filter != 'resolved' %}active{% endif %}"
+         href="?status=pending">
+        Pending
+        {% if status_filter != 'resolved' %}
+          <span class="badge bg-danger ms-1">{{ reports.count }}</span>
+        {% endif %}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status_filter == 'resolved' %}active{% endif %}"
+         href="?status=resolved">
+        Resolved
+      </a>
+    </li>
+  </ul>
+
+  {% if reports %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Reporter</th>
+            <th scope="col">Content Type</th>
+            <th scope="col">Object ID</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Description</th>
+            <th scope="col">Date</th>
+            {% if status_filter != 'resolved' %}
+              <th scope="col">Action</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+            <tr id="report-row-{{ report.pk }}">
+              <td>{{ report.pk }}</td>
+              <td>
+                <a href="{% url 'accounts:profile' report.reporter.username %}">
+                  {{ report.reporter.username }}
+                </a>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ report.content_type }}</span>
+              </td>
+              <td>{{ report.object_id }}</td>
+              <td>
+                <span class="badge
+                  {% if report.reason == 'spam' %}bg-warning text-dark
+                  {% elif report.reason == 'offensive' %}bg-danger
+                  {% else %}bg-info text-dark{% endif %}">
+                  {{ report.get_reason_display }}
+                </span>
+              </td>
+              <td>
+                <span class="text-truncate d-inline-block" style="max-width:200px;"
+                      title="{{ report.description }}">
+                  {{ report.description|default:"—" }}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">{{ report.created_at|date:"M d, Y" }}</small>
+              </td>
+              {% if status_filter != 'resolved' %}
+                <td>
+                  <button class="btn btn-sm btn-success resolve-btn"
+                          data-report-id="{{ report.pk }}"
+                          data-url="{% url 'resolve_report' report.pk %}">
+                    <i class="bi bi-check-lg"></i> Resolve
+                  </button>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-check-circle fs-1 text-success"></i>
+      <p class="mt-2">
+        {% if status_filter == 'resolved' %}No resolved reports yet.{% else %}No pending reports. All clear!{% endif %}
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.resolve-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    const reportId = this.dataset.reportId;
+    const url = this.dataset.url;
+    const row = document.getElementById('report-row-' + reportId);
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(function (resp) { return resp.json(); })
+    .then(function (data) {
+      if (data.status === 'ok' && row) {
+        row.classList.add('table-success');
+        row.querySelector('.resolve-btn').disabled = true;
+        row.querySelector('.resolve-btn').textContent = 'Resolved';
+      }
+    })
+    .catch(console.error);
+  });
+});
+</script>
+{% endblock %}

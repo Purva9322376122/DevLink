@@ -1,0 +1,36 @@
+/* Home page styles - follow design-system tokens where possible */
+.dl-home { background: #f6f8fa; padding-top: 8px; }
+
+/* Hero */
+.dl-hero-title { font-size: 56px; line-height: 1.02; font-weight:700; color:#111827; margin-bottom:0.25rem; }
+.dl-hero-sub { font-size:20px; color:#6B7280; max-width:70ch; }
+
+.dl-card { background:white; border-radius:16px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); border: 1px solid #E5E7EB; }
+.dl-card-header { padding: 18px 20px; border-bottom: 1px solid rgba(15,23,42,0.04); }
+.dl-card-body { padding: 20px; }
+
+.stat-card { background: transparent; border-radius:10px; }
+.stat-icon { font-size:20px; }
+.stat-value { color:#111827; }
+
+/* Problem list */
+.list-group-item { background: transparent; border: none; padding-left: 0; padding-right: 0; }
+.list-group-item + .list-group-item { border-top: 1px solid rgba(15,23,42,0.03); }
+
+.dl-card-problem { border-radius: 12px; border: 1px solid rgba(15,23,42,0.04); transition: box-shadow .12s ease; }
+.dl-card-problem:hover { box-shadow: 0 6px 20px rgba(15,23,42,0.06); }
+
+/* Profile card included component styles compatibility */
+.dl-profile-card img { width:48px; height:48px; object-fit:cover; }
+
+/* Accessibility focus */
+a:focus, button:focus { outline: 3px solid rgba(37,99,235,0.18); outline-offset: 2px; }
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .dl-hero-title { font-size: 28px; }
+  .dl-hero-sub { font-size:16px; }
+}
+
+/* Small utilities */
+.text-muted.small { font-size: 0.85rem; }

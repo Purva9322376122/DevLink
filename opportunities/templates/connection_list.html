@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/connections.css' %}">
+{% endblock %}
+
+{% block title %}Connections — DevLink{% endblock %}
+
+{% block content %}
+<main class="connections-container">
+  <!-- Page Header -->
+  <header class="connections-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Connections</h1>
+        <p class="header-subtitle">Build and manage your professional network.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="header-btn header-btn-primary" onclick="openFindDevelopersModal()">
+          <i class="bi bi-person-plus-fill"></i> Find Developers
+        </button>
+        <a href="{% url 'sent_invitations' %}" class="header-btn header-btn-secondary">
+          <i class="bi bi-envelope-paper"></i> Invitations
+          {% if pending_requests_count > 0 %}
+            <span class="badge rounded-pill bg-primary ms-1" style="font-size:0.7rem;">{{ pending_requests_count }}</span>
+          {% endif %}
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Statistics Section -->
+  <section class="connections-stats-grid" aria-label="Network Statistics">
+    <!-- Stat 1: Total Connections -->
+    <div class="stat-card" data-aos="fade-up">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Total Connections</span>
+        <div class="stat-card-icon stat-icon-blue">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ total_connections_count }}</div>
+        <div class="stat-card-subtext">
+          <span class="stat-badge-growth"><i class="bi bi-graph-up-arrow"></i> +12</span> this month
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat 2: Online -->
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Online</span>
+        <div class="stat-card-icon stat-icon-green">
+          <i class="bi bi-circle-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ online_count }}</div>
+        <div class="stat-card-subtext">Currently active</div>
+      </div>
+    </div>
+
+    <!-- Stat 3: Pending Requests -->
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Pending Requests</span>
+        <div class="stat-card-icon stat-icon-amber">
+          <i class="bi bi-envelope-paper-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ pending_requests_count }}</div>
+        <div class="stat-card-subtext">
+          {% if pending_requests_count > 0 %}Needs action{% else %}All clear{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat 4: Network Strength -->
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Network Strength</span>
+        <div class="stat-card-icon stat-icon-purple">
+          <i class="bi bi-star-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ strength_label }}</div>
+        <div class="stat-card-subtext">{{ strength_subtext }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search & Filter Bar -->
+  <div class="search-bar-wrapper">
+    <form method="get" class="search-filters" role="search" aria-label="Search and filter connections">
+      <div class="search-input-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input 
+          type="search" 
+          name="q" 
+          value="{{ selected_query }}" 
+          placeholder="Search connections, skills, or titles..." 
+          aria-label="Search connections"
+          class="search-input-field"
+        >
+      </div>
+
+      <div class="filters-group">
+        <select name="filter" class="filter-select" aria-label="Filter by status">
+          <option value="all" {% if selected_filter == 'all' or not selected_filter %}selected{% endif %}>All Connections</option>
+          <option value="online" {% if selected_filter == 'online' %}selected{% endif %}>Online</option>
+          <option value="offline" {% if selected_filter == 'offline' %}selected{% endif %}>Offline</option>
+          <option value="recent" {% if selected_filter == 'recent' %}selected{% endif %}>Recently Added</option>
+        </select>
+
+        <select name="sort" class="filter-select" aria-label="Sort by">
+          <option value="newest" {% if selected_sort == 'newest' or not selected_sort %}selected{% endif %}>Newest</option>
+          <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name</option>
+          <option value="active" {% if selected_sort == 'active' %}selected{% endif %}>Recently Active</option>
+        </select>
+
+        <button type="submit" class="filter-button" aria-label="Apply filters">
+          <i class="bi bi-funnel"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Connection Cards Grid Section -->
+  <section class="connections-list-section" aria-live="polite" aria-label="List of connections">
+    {% if connections %}
+      <div class="connections-grid">
+        {% for item in connections %}
+        <article class="connection-card" data-aos="fade-up">
+          <!-- Card Header: Profile Picture, Name, Username, Role, Menu -->
+          <div class="connection-card-header">
+            <div class="connection-avatar-wrapper">
+              <a href="{% url 'accounts:profile' item.username %}" aria-label="View profile of {{ item.full_name }}">
+                <img src="{{ item.avatar_url }}" alt="{{ item.full_name }}" class="connection-avatar">
+              </a>
+              <span class="connection-status-dot {% if item.is_online %}status-online{% else %}status-offline{% endif %}" title="{% if item.is_online %}Online{% else %}Offline{% endif %}"></span>
+            </div>
+
+            <div class="connection-user-info">
+              <h3 class="connection-name">
+                <a href="{% url 'accounts:profile' item.username %}">{{ item.full_name }}</a>
+              </h3>
+              <p class="connection-username">@{{ item.username }}</p>
+              <p class="connection-role">
+                <i class="bi bi-briefcase"></i> {{ item.job_title }}
+              </p>
+            </div>
+
+            <!-- More Menu (Three Dots Dropdown) -->
+            <div class="connection-menu-wrapper">
+              <button type="button" class="connection-menu-btn" onclick="toggleCardMenu(event, 'menu-{{ item.connection_id }}')" aria-label="More options">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <div class="connection-dropdown-menu" id="menu-{{ item.connection_id }}">
+                <a href="{% url 'accounts:profile' item.username %}" class="dropdown-action-item">
+                  <i class="bi bi-person"></i> View Profile
+                </a>
+                <a href="{% url 'messages:start' item.username %}" class="dropdown-action-item">
+                  <i class="bi bi-chat-dots"></i> Message
+                </a>
+                <div class="dropdown-divider" style="height:1px; background:var(--border); margin:4px 0;"></div>
+                <form method="post" action="{% url 'remove_connection' item.connection_id %}" onsubmit="return confirm('Remove connection with {{ item.username }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-action-item text-danger">
+                    <i class="bi bi-person-x"></i> Remove Connection
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Body: Meta info (Location, Mutuals, Last Active), Bio, Skills -->
+          <div class="connection-card-body">
+            <div class="connection-meta-row">
+              <span class="connection-meta-item" title="Location">
+                <i class="bi bi-geo-alt"></i> {{ item.location }}
+              </span>
+              <span class="connection-meta-item" title="Mutual Connections">
+                <i class="bi bi-people"></i> {{ item.mutual_count }} mutual{% if item.mutual_count != 1 %}s{% endif %}
+              </span>
+              <span class="connection-meta-item" title="Last Active">
+                <i class="bi bi-clock-history"></i> {{ item.last_active_str }}
+              </span>
+            </div>
+
+            <p class="connection-bio">
+              {% if item.bio %}
+                {{ item.bio }}
+              {% else %}
+                Full-stack developer passionate about building modern web applications on DevLink.
+              {% endif %}
+            </p>
+
+            {% if item.skills %}
+            <div class="connection-skills">
+              {% for skill in item.skills %}
+                <span class="skill-tag">{{ skill }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Card Footer Actions: View Profile, Message, Quick Remove -->
+          <div class="connection-card-footer">
+            <a href="{% url 'accounts:profile' item.username %}" class="btn-card-action btn-card-outline">
+              <i class="bi bi-person"></i> Profile
+            </a>
+            <a href="{% url 'messages:start' item.username %}" class="btn-card-action btn-card-primary">
+              <i class="bi bi-chat-dots-fill"></i> Message
+            </a>
+            <form method="post" action="{% url 'remove_connection' item.connection_id %}" style="margin:0;" onsubmit="return confirm('Remove {{ item.username }} from connections?');">
+              {% csrf_token %}
+              <button type="submit" class="btn-card-danger" title="Remove Connection" aria-label="Remove connection">
+                <i class="bi bi-person-x-fill"></i>
+              </button>
+            </form>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj and page_obj.paginator.num_pages > 1 %}
+      <nav class="pagination-wrapper" aria-label="Pagination">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_query %}&q={{ selected_query }}{% endif %}{% if selected_filter %}&filter={{ selected_filter }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="Previous page">
+                <i class="bi bi-chevron-left"></i> Previous
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">
+                <i class="bi bi-chevron-left"></i> Previous
+              </span>
+            </li>
+          {% endif %}
+
+          {% for p in page_obj.paginator.page_range %}
+            {% if page_obj.number == p %}
+              <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ p }}</span>
+              </li>
+            {% elif p|add:'-2' <= page_obj.number and p|add:'2' >= page_obj.number %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ p }}{% if selected_query %}&q={{ selected_query }}{% endif %}{% if selected_filter %}&filter={{ selected_filter }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="Page {{ p }}">{{ p }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_query %}&q={{ selected_query }}{% endif %}{% if selected_filter %}&filter={{ selected_filter }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="Next page">
+                Next <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">
+                Next <i class="bi bi-chevron-right"></i>
+              </span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-content">
+          <i class="bi bi-people empty-state-icon"></i>
+          <h3 class="empty-state-title">No connections yet</h3>
+          <p class="empty-state-description">
+            Start building your professional network by connecting with developers, collaborators, and experts across DevLink.
+          </p>
+          <button type="button" class="header-btn header-btn-primary empty-state-button" onclick="openFindDevelopersModal()">
+            <i class="bi bi-person-plus-fill"></i> Find Developers
+          </button>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+</main>
+
+<!-- Find Developers Modal -->
+<div class="custom-modal-backdrop" id="findDevelopersModal">
+  <div class="custom-modal">
+    <div class="custom-modal-header">
+      <h3 class="custom-modal-title"><i class="bi bi-person-plus text-primary me-2"></i>Find Developers</h3>
+      <button type="button" class="custom-modal-close" onclick="closeFindDevelopersModal()">&times;</button>
+    </div>
+    <div class="custom-modal-body">
+      <form method="post" action="{% url 'send_invitation' %}" class="mb-4">
+        {% csrf_token %}
+        <label class="form-label fw-semibold small text-muted mb-2">Send Invitation by Username</label>
+        <div class="input-group mb-2">
+          <span class="input-group-text bg-body"><i class="bi bi-at"></i></span>
+          <input type="text" name="username" class="form-control" placeholder="e.g. jane_doe" required>
+        </div>
+        <textarea name="message" class="form-control mb-3" rows="2" placeholder="Personal message (optional)"></textarea>
+        <button type="submit" class="dl-btn dl-btn-primary w-100">
+          <i class="bi bi-send-fill"></i> Send Invitation
+        </button>
+      </form>
+
+      {% if discover_users %}
+      <div class="mt-4">
+        <h5 class="fw-bold fs-6 mb-3 text-muted uppercase">Recommended Developers</h5>
+        {% for d_user in discover_users %}
+        <div class="discover-user-item">
+          <div class="d-flex align-items-center gap-3">
+            <img src="{{ d_user.avatar_url }}" alt="{{ d_user.username }}" class="rounded-circle" width="42" height="42">
+            <div>
+              <div class="fw-bold text-body" style="font-size:0.95rem;">{{ d_user.get_full_name|default:d_user.username }}</div>
+              <div class="text-muted small">@{{ d_user.username }} &bull; {{ d_user.job_title }}</div>
+            </div>
+          </div>
+          <form method="post" action="{% url 'send_invitation' %}" style="margin:0;">
+            {% csrf_token %}
+            <input type="hidden" name="username" value="{{ d_user.username }}">
+            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+              <i class="bi bi-plus-lg"></i> Connect
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCardMenu(event, menuId) {
+  event.stopPropagation();
+  // Close all other open card menus
+  document.querySelectorAll('.connection-dropdown-menu').forEach(function(menu) {
+    if (menu.id !== menuId) {
+      menu.classList.remove('show');
+    }
+  });
+  var targetMenu = document.getElementById(menuId);
+  if (targetMenu) {
+    targetMenu.classList.toggle('show');
+  }
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.connection-menu-wrapper')) {
+    document.querySelectorAll('.connection-dropdown-menu').forEach(function(menu) {
+      menu.classList.remove('show');
+    });
+  }
+});
+
+// Modal functions
+function openFindDevelopersModal() {
+  var modal = document.getElementById('findDevelopersModal');
+  if (modal) {
+    modal.classList.add('show');
+  }
+}
+
+function closeFindDevelopersModal() {
+  var modal = document.getElementById('findDevelopersModal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+}
+
+document.getElementById('findDevelopersModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeFindDevelopersModal();
+  }
+});
+</script>
+{% endblock %}

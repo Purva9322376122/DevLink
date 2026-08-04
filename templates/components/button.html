@@ -1,0 +1,9 @@
+{# Reusable button include
+   Usage: {% include 'components/button.html' with text='Save' href=url type='primary' %}
+   class: primary, secondary, outline, danger
+#}
+{% if href %}
+<a href="{{ href }}" class="btn dl-btn dl-btn-{{ type|default:'primary' }} {{ extra_class|default:'' }}" role="button">{{ text }}</a>
+{% else %}
+<button type="{{ button_type|default:'button' }}" class="btn dl-btn dl-btn-{{ type|default:'primary' }} {{ extra_class|default:'' }}">{{ text }}</button>
+{% endif %}

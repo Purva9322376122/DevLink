@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="auth-viewport">
+  <section class="dl-card auth-card" role="region" aria-labelledby="login-heading">
+
+    <div class="text-center mb-3">
+      <a href="/" class="dl-brand" aria-label="DevLink home">
+        <span class="dl-logo"><i class="bi bi-code-slash"></i></span>
+            <span class="dl-title">DevLink</span>
+      </a>
+    </div>
+
+    <h1 id="login-heading" class="auth-title text-center">Welcome Back</h1>
+    <p class="auth-sub text-center">Sign in to continue to DevLink</p>
+
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="POST" class="auth-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+      <div class="form-group">
+        <label for="id_username" class="dl-form-label">Email or Username</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-at"></i></span>
+          <input id="id_username" name="username" type="text" class="dl-form-input form-input" required aria-required="true" aria-label="Email or Username" placeholder="you@example.com or username" value="{{ request.POST.username|default_if_none:'' }}">
+        </div>
+        {% if form and form.username.errors %}
+          <div class="input-error">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_password" class="dl-form-label">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon"><i class="bi bi-lock"></i></span>
+          <input id="id_password" name="password" type="password" class="dl-form-input form-input password-field" required aria-required="true" aria-label="Password" placeholder="Enter your password">
+          <button type="button" class="password-toggle dl-icon-btn" aria-label="Toggle password visibility" data-target="#id_password"><i class="bi bi-eye-slash" aria-hidden="true"></i></button>
+        </div>
+        {% if form and form.password.errors %}
+          <div class="input-error">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-row form-row-between mb-3">
+        <label class="checkbox-wrap"><input type="checkbox" name="remember" class="checkbox"> Remember me</label>
+        <a href="{% url 'accounts:password_reset' %}" class="forgot-link">Forgot password?</a>
+      </div>
+
+      <div class="mb-2">
+        <button type="submit" class="dl-btn dl-btn-primary w-100" style="height:48px;border-radius:10px;">Login</button>
+      </div>
+
+      <div class="auth-footer text-center">Don’t have an account? <a href="{% url 'accounts:signup' %}">Sign up</a></div>
+
+    </form>
+  </section>
+</main>
+
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Edit Problem — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<link rel="stylesheet" href="{% static 'css/problem_create.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="problem-create-wrapper">
+  <div class="problem-card">
+    <header class="problem-header">
+      <div>
+        <h1 class="pc-title"><i class="bi bi-pencil me-2 text-primary"></i>Edit Problem</h1>
+        <p class="pc-subtitle">Update problem details below.</p>
+      </div>
+    </header>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Title -->
+      <div class="form-group">
+        <label class="field-label">Title <span class="required">*</span></label>
+        <input type="text" name="title" class="field-input" maxlength="255" value="{{ problem.title }}" required>
+        {% if messages %}{% for message in messages %}{% if 'Title' in message %}<div class="field-error">{{ message }}</div>{% endif %}{% endfor %}{% endif %}
+      </div>
+
+      <!-- Description (EasyMDE) -->
+      <div class="form-group">
+        <label class="field-label">Description <span class="required">*</span></label>
+        <textarea name="description" id="description-editor" class="field-textarea">{{ problem.description }}</textarea>
+        <div class="field-help muted">Markdown supported. Use code blocks for sample input/output.</div>
+      </div>
+
+      <!-- Difficulty / Language -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label">Difficulty</label>
+          <select name="difficulty" class="field-select" required>
+            <option value="easy" {% if problem.difficulty == 'easy' %}selected{% endif %}>Easy</option>
+            <option value="medium" {% if problem.difficulty == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="hard" {% if problem.difficulty == 'hard' %}selected{% endif %}>Hard</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Primary Language</label>
+          <select name="language" class="field-select">
+            <option value="">Any</option>
+            {% for lang in languages %}
+            <option value="{{ lang }}" {% if problem.language == lang %}selected{% endif %}>{{ lang }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label class="field-label">Category</label>
+        <input type="text" name="category" class="field-input" maxlength="100" value="{{ problem.category }}">
+      </div>
+
+      <!-- Tags -->
+      <div class="form-group">
+        <label class="field-label">Tags <span class="field-help-inline">(comma-separated, max 5)</span></label>
+        <input type="text" name="tags" id="tags-input" class="field-input" value="{{ current_tags }}">
+        <div id="tag-suggestions" class="tag-suggestions"></div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <a href="{% url 'problem_detail' problem.id %}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+// keep existing EasyMDE initialization and tag autocomplete untouched
+const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+const easyMDE = new EasyMDE({
+  element: document.getElementById('description-editor'),
+  spellChecker: false,
+  autosave: { enabled: true, uniqueId: 'problem-edit-'|add:problem.id, delay: 3000 },
+  toolbar: ['bold','italic','heading','|','quote','code','unordered-list','ordered-list',
+            '|','link','image','table','|','preview','side-by-side','fullscreen','|','guide'],
+  minHeight: '220px',
+  theme: isDark ? 'dark' : 'light',
+});
+
+// Tag autocomplete (keep behavior)
+const tagsInput = document.getElementById('tags-input');
+const suggestionsEl = document.getElementById('tag-suggestions');
+let debounceTimer;
+
+tagsInput && tagsInput.addEventListener('input', function() {
+  clearTimeout(debounceTimer);
+  const parts = this.value.split(',');
+  const last = parts[parts.length - 1].trim();
+  if (last.length < 2) { suggestionsEl.innerHTML = ''; return; }
+  debounceTimer = setTimeout(() => {
+    fetch(`{% url 'tag_autocomplete' %}?q=${encodeURIComponent(last)}`)
+      .then(r => r.json())
+      .then(data => {
+        suggestionsEl.innerHTML = '';
+        data.tags.forEach(tag => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'tag-suggestion';
+          btn.textContent = tag.name;
+          btn.addEventListener('click', () => {
+            const current = tagsInput.value.split(',');
+            current[current.length - 1] = ' ' + tag.name;
+            tagsInput.value = current.join(',') + ', ';
+            suggestionsEl.innerHTML = '';
+            tagsInput.focus();
+          });
+          suggestionsEl.appendChild(btn);
+        });
+      });
+  }, 300);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% load static notification_tags %}
+<div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+  <span class="fw-semibold small">Notifications
+    {% if unread_count %}<span class="badge bg-danger rounded-pill ms-1">{{ unread_count }}</span>{% endif %}
+  </span>
+  {% if unread_count %}
+  <button class="btn btn-link btn-sm p-0 text-decoration-none small"
+          hx-post="{% url 'notifications:mark_all_read' %}"
+          onclick="markAllRead(event)">Mark all read</button>
+  {% endif %}
+</div>
+
+<div style="max-height:360px;overflow-y:auto;">
+  {% for notif in notifications %}
+  <a href="{{ notif.target_url }}"
+     class="d-flex align-items-start gap-2 px-3 py-2 text-decoration-none border-bottom notification-item {% if not notif.is_read %}bg-primary bg-opacity-10{% endif %}"
+     data-id="{{ notif.id }}"
+     onclick="markRead(event, {{ notif.id }})">
+    <div class="flex-shrink-0 mt-1">
+      <span class="badge rounded-pill bg-secondary-subtle text-secondary p-1">
+        <i class="bi {{ notif.verb|notif_icon }} fs-6"></i>
+      </span>
+    </div>
+    <div class="flex-grow-1 min-w-0">
+      <p class="mb-0 small text-body-emphasis text-truncate">{{ notif.preview }}</p>
+      <span class="text-muted" style="font-size:.72rem;">{{ notif.created_at|timesince }} ago</span>
+    </div>
+    {% if not notif.is_read %}
+    <span class="badge bg-primary rounded-circle p-1 flex-shrink-0 mt-1" style="width:8px;height:8px;"></span>
+    {% endif %}
+  </a>
+  {% empty %}
+  <div class="text-center text-muted py-4 small">
+    <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-50"></i>
+    No notifications yet
+  </div>
+  {% endfor %}
+</div>
+
+<div class="px-3 py-2 border-top text-center">
+  <a href="{% url 'notifications:list' %}" class="small text-primary text-decoration-none">
+    View all notifications
+  </a>
+</div>

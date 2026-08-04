@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<link rel="stylesheet" href="{% static 'css/problem_create.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="problem-create-wrapper">
+  <div class="problem-card">
+    <header class="problem-header">
+      <div>
+        <h1 class="pc-title">Create Opportunity</h1>
+        <p class="pc-subtitle">Share internships, freelance work, hackathons, open-source projects, or developer collaborations with the DevLink community.</p>
+      </div>
+      <div class="pc-meta"></div>
+    </header>
+
+    <form method="post" action="" novalidate>
+      {% csrf_token %}
+
+      <!-- Title -->
+      <div class="form-group">
+        <label class="field-label">Title <span class="required">*</span></label>
+        <input type="text" name="title" id="id_title" class="field-input" maxlength="255"
+               placeholder="React Developer - Remote Internship" required>
+        {% if messages %}{% for message in messages %}{% if 'Title' in message %}<div class="field-error">{{ message }}</div>{% endif %}{% endfor %}{% endif %}
+      </div>
+
+      <!-- Description (EasyMDE) -->
+      <div class="form-group">
+        <label class="field-label">Description <span class="required">*</span></label>
+        <textarea name="description" id="description-editor" class="field-textarea" placeholder="Describe the opportunity. Markdown is supported."></textarea>
+        <div class="field-help muted">Markdown supported. Use lists and code blocks to explain tasks clearly.</div>
+      </div>
+
+      <!-- Type / Remote / Stipend grid -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label">Opportunity Type <span class="required">*</span></label>
+          <select name="opportunity_type" class="field-select" required>
+            <option value="">Select…</option>
+            <option value="internship">Internship</option>
+            <option value="freelance">Freelance</option>
+            <option value="full_time">Full Time</option>
+            <option value="open_source">Open Source</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Remote</label>
+          <select name="remote" class="field-select">
+            <option value="">Any</option>
+            <option value="remote">Remote</option>
+            <option value="on_site">On-site</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Stipend / Salary</label>
+          <input type="text" name="salary" class="field-input" maxlength="100" placeholder="e.g., Unpaid, $500/month, Paid">
+        </div>
+      </div>
+
+      <!-- Required Skills -->
+      <div class="form-group">
+        <label class="field-label">Required Skills <span class="field-help-inline">(comma-separated)</span></label>
+        <input type="text" name="required_skills" id="skills-input" class="field-input" placeholder="e.g. Django, React, Python">
+        <div id="skill-suggestions" class="tag-suggestions"></div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <a href="{% url 'opportunity_list' %}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">Post Opportunity</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+// Keep editor and suggestions behavior consistent with Problem create page
+const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+const easyMDE = new EasyMDE({
+  element: document.getElementById('description-editor'),
+  spellChecker: false,
+  autosave: { enabled: true, uniqueId: 'opportunity-create', delay: 3000 },
+  toolbar: ['bold','italic','heading','|','quote','code','unordered-list','ordered-list',
+            '|','link','image','table','horizontal-rule','|','preview','side-by-side','fullscreen','|','guide'],
+  minHeight: '220px',
+  theme: isDark ? 'dark' : 'light',
+});
+
+// Simple skills autocomplete (reuses tag approach)
+const skillsInput = document.getElementById('skills-input');
+const suggestionsEl = document.getElementById('skill-suggestions');
+let debounceTimer;
+skillsInput && skillsInput.addEventListener('input', function() {
+  clearTimeout(debounceTimer);
+  const parts = this.value.split(',');
+  const last = parts[parts.length - 1].trim();
+  if (last.length < 2) { suggestionsEl.innerHTML = ''; return; }
+  debounceTimer = setTimeout(() => {
+    fetch(`{% url 'tag_autocomplete' %}?q=${encodeURIComponent(last)}`)
+      .then(r => r.json())
+      .then(data => {
+        suggestionsEl.innerHTML = '';
+        data.tags.forEach(tag => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'tag-suggestion';
+          btn.textContent = tag.name;
+          btn.addEventListener('click', () => {
+            const current = skillsInput.value.split(',');
+            current[current.length - 1] = ' ' + tag.name;
+            skillsInput.value = current.join(',') + ', ';
+            suggestionsEl.innerHTML = '';
+            skillsInput.focus();
+          });
+          suggestionsEl.appendChild(btn);
+        });
+      });
+  }, 300);
+});
+</script>
+{% endblock %}

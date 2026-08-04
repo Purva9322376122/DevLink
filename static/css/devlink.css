@@ -1,0 +1,12 @@
+/* DevLink v1.0 — Brand CSS */
+/* Phase 12 will populate this with the full Bootstrap 5 theme */
+
+:root {
+  --dl-primary: #6366f1;
+  --dl-primary-hover: #4f46e5;
+  --dl-secondary: #0ea5e9;
+  --dl-dark-bg: #0f172a;
+  --dl-dark-card: #1e293b;
+  --dl-dark-border: #334155;
+  --dl-text-muted-dark: #94a3b8;
+}

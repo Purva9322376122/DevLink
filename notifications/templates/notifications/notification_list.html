@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Notifications — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/opportunities.css' %}">
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="opportunities-container">
+  
+  <!-- Page Header -->
+  <header class="opportunities-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Notifications</h1>
+        <p class="header-subtitle">Stay updated with your recent activity.</p>
+      </div>
+      {% if unread_count > 0 %}
+        <div class="header-right">
+          <form method="post" action="{% url 'notifications:mark_all_read' %}" onsubmit="markAllRead(event)">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary header-btn" aria-label="Mark all as read">
+              <i class="bi bi-check2-all"></i>
+              <span>Mark all as read</span>
+            </button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Notification Feed -->
+  <main class="opportunities-list" id="notif-feed">
+    {% if notifications %}
+      {% for notif in notifications %}
+        <article class="opportunity-card notif-opportunity-card {% if not notif.is_read %}notif-unread-card{% endif %}" data-id="{{ notif.id }}">
+          
+          <!-- Top Row (Header) -->
+          <div class="card-header">
+            <div class="card-title-wrapper">
+              <h3 class="card-title">
+                {% if notif.target_url %}
+                  <a href="{{ notif.target_url }}" class="card-title-link">{{ notif.preview }}</a>
+                {% else %}
+                  <span>{{ notif.preview }}</span>
+                {% endif %}
+              </h3>
+            </div>
+            <div class="card-badges">
+              {% if not notif.is_read %}
+                <span class="opportunity-type-badge type-badge-job notif-badge-unread">● Unread</span>
+              {% else %}
+                <span class="opportunity-type-badge notif-badge-read">✓ Read</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Bottom Row (Footer) -->
+          <div class="card-footer">
+            <div class="footer-left">
+              <div class="posted-info">
+                <span class="posted-by">
+                  <i class="bi bi-person"></i>
+                  {% if notif.actor %}
+                    <a href="{% url 'accounts:profile' notif.actor.username %}" class="posted-by-link">
+                      {{ notif.actor.get_full_name|default:notif.actor.username }}
+                    </a>
+                  {% else %}
+                    <span>DevLink System</span>
+                  {% endif %}
+                </span>
+                <span class="posted-date">
+                  <i class="bi bi-clock"></i>
+                  {{ notif.created_at|timesince }} ago
+                </span>
+              </div>
+            </div>
+            
+            <div class="footer-right">
+              {% if notif.target_url %}
+                <a href="{{ notif.target_url }}" class="view-button">
+                  <span>View</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+              {% endif %}
+
+              {% if not notif.is_read %}
+                <button type="button" class="btn btn-sm btn-outline-secondary notif-mark-btn" onclick="markSingleRead(event, {{ notif.id }})" title="Mark as read">
+                  <i class="bi bi-check-lg"></i>
+                  <span>Mark as read</span>
+                </button>
+              {% endif %}
+            </div>
+          </div>
+
+        </article>
+      {% endfor %}
+    {% else %}
+      <!-- Empty State matching Opportunities empty state style -->
+      <div class="empty-state">
+        <div class="empty-state-content">
+          <i class="bi bi-bell empty-state-icon"></i>
+          <h2 class="empty-state-title">No notifications yet.</h2>
+          <p class="empty-state-description">You're all caught up.</p>
+        </div>
+      </div>
+    {% endif %}
+  </main>
+
+</div>
+
+{% block extra_js %}
+<script>
+function markSingleRead(event, notifId) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const btn = event.currentTarget;
+  const card = btn.closest('.opportunity-card');
+
+  fetch(`/notifications/${notifId}/read/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      card.classList.remove('notif-unread-card');
+      const badge = card.querySelector('.card-badges');
+      if (badge) {
+        badge.innerHTML = '<span class="opportunity-type-badge notif-badge-read">✓ Read</span>';
+      }
+      btn.remove();
+    }
+  })
+  .catch(err => console.error('Error marking notification as read:', err));
+}
+
+function markAllRead(event) {
+  event.preventDefault();
+
+  fetch('{% url "notifications:mark_all_read" %}', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      document.querySelectorAll('.opportunity-card').forEach(card => {
+        card.classList.remove('notif-unread-card');
+        const badge = card.querySelector('.card-badges');
+        if (badge) {
+          badge.innerHTML = '<span class="opportunity-type-badge notif-badge-read">✓ Read</span>';
+        }
+        card.querySelector('.notif-mark-btn')?.remove();
+      });
+      document.querySelector('.header-right')?.remove();
+    }
+  })
+  .catch(err => console.error('Error marking all as read:', err));
+}
+</script>
+{% endblock %}
+
+{% endblock %}

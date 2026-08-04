@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Tags — DevLink{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-tags me-2 text-primary"></i>Tags</h4>
+</div>
+
+<form method="get" class="mb-4">
+  <div class="input-group" style="max-width:400px">
+    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search tags…">
+    <button class="btn btn-outline-primary" type="submit">Search</button>
+  </div>
+</form>
+
+<div class="row g-3">
+  {% for tag in tags %}
+  <div class="col-sm-6 col-md-4 col-lg-3">
+    <a href="{% url 'tag_detail' tag.slug %}" class="card shadow-sm text-decoration-none h-100">
+      <div class="card-body">
+        <span class="badge bg-secondary-subtle text-secondary-emphasis mb-2">{{ tag.name }}</span>
+        {% if tag.description %}
+        <p class="small text-muted mb-1">{{ tag.description|truncatewords:12 }}</p>
+        {% endif %}
+        <div class="small text-muted">{{ tag.usage_count }} problem{{ tag.usage_count|pluralize }}</div>
+      </div>
+    </a>
+  </div>
+  {% empty %}
+  <div class="col-12 text-center text-muted py-4">No tags found.</div>
+  {% endfor %}
+</div>
+{% endblock %}

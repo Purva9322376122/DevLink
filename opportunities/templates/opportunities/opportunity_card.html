@@ -1,0 +1,39 @@
+{# Reusable opportunity card. Expects variable 'opp' in context. Keeps all original template variables intact. #}
+<article class="dl-opportunity-card" role="article">
+  <div class="d-flex justify-content-between align-items-start">
+    <h3 class="op-title mb-0">
+      {% if opp.get_absolute_url %}
+        <a href="{{ opp.get_absolute_url }}">{{ opp.title }}</a>
+      {% else %}
+        <a href="{% url 'opportunity_detail' opp.id %}">{{ opp.title }}</a>
+      {% endif %}
+    </h3>
+    <div class="date-badge">{% if opp.created_at %}{{ opp.created_at|date:"M d, Y" }}{% elif opp.created %}{{ opp.created|date:"M d, Y" }}{% endif %}</div>
+  </div>
+
+  <div class="op-card-body mt-3">
+    <p class="op-desc">{{ opp.description }}</p>
+
+    <p class="required-skills mt-3"><strong>Required Skills:</strong>
+      {% if opp.required_skills %}
+        {{ opp.required_skills }}
+      {% elif opp.skills %}
+        {% if opp.skills.all %}
+          {% for skill in opp.skills.all %}{% if not forloop.first %}/{% endif %}{{ skill.name }}{% endfor %}
+        {% else %}
+          {{ opp.skills }}
+        {% endif %}
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="op-card-footer mt-3 text-muted small">
+    {% if opp.user %}
+      Posted by {{ opp.user.get_full_name|default:opp.user.username }}
+    {% elif opp.posted_by %}
+      Posted by {{ opp.posted_by.get_full_name|default:opp.posted_by.username }}
+    {% elif opp.author %}
+      Posted by {{ opp.author.get_full_name|default:opp.author.username }}
+    {% endif %}
+  </div>
+</article>

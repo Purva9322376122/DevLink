@@ -1,0 +1,8 @@
+{# Small profile card used in lists #}
+<div class="dl-profile-card d-flex align-items-center">
+  <img src="{{ user.avatar_url }}" alt="{{ user.username }}" class="rounded-circle me-3" width="48" height="48"/>
+  <div>
+    <div class="fw-600">{{ user.display_name|default:user.username }}</div>
+    <div class="text-muted small">{{ user.headline }}</div>
+  </div>
+</div>

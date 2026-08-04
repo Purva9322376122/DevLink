@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}History — {{ problem.title }} — DevLink{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex align-items-center gap-2 mb-4">
+      <a href="{% url 'problem_detail' problem.id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Edit History</h5>
+    </div>
+
+    <div class="card shadow-sm">
+      {% if revisions %}
+      {% for revision in revisions %}
+      <div class="d-flex align-items-start gap-3 p-3 border-bottom">
+        <div class="flex-shrink-0 text-muted small" style="min-width:40px;">v{{ revision.version }}</div>
+        <div class="flex-grow-1">
+          <div class="fw-semibold small">{{ revision.title }}</div>
+          <div class="text-muted small">
+            by {{ revision.editor.username|default:"Unknown" }} · {{ revision.created_at|timesince }} ago
+          </div>
+          <div class="mt-1">
+            <span class="badge {% if revision.difficulty == 'easy' %}dl-badge-easy{% elif revision.difficulty == 'medium' %}dl-badge-medium{% else %}dl-badge-hard{% endif %}">
+              {{ revision.difficulty|capfirst }}
+            </span>
+          </div>
+        </div>
+        {% if user == problem.user %}
+        <form method="post"
+              action="{% url 'restore_problem_revision' problem.id revision.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm"
+                  onclick="return confirm('Restore to this version?')">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="p-4 text-center text-muted">No edit history yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

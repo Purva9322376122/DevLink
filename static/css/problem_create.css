@@ -1,0 +1,68 @@
+/* Problem Create page styles - DevLink design system */
+:root{
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --bg: #F6F8FA;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+  --text: #111827;
+  --muted: #6B7280;
+  --shadow: 0 12px 30px rgba(16,24,40,0.06);
+  --radius: 18px;
+}
+
+/* Page wrapper */
+.problem-create-wrapper{ max-width:1000px; margin:40px auto; padding:0 24px; box-sizing:border-box; }
+.problem-card{ background:var(--card); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow); border:1px solid var(--border); }
+
+/* Header */
+.problem-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:20px; }
+.pc-title{ font-size:28px; font-weight:700; margin:0; color:var(--text); }
+.pc-subtitle{ margin:6px 0 0; color:var(--muted); font-size:14px }
+
+/* Form layout */
+.form-group{ margin-bottom:24px; }
+.field-label{ display:block; font-weight:700; margin-bottom:8px; color:var(--text); }
+.required{ color:#DC2626; margin-left:6px; font-weight:600 }
+.field-help-inline{ color:var(--muted); font-size:13px; margin-left:8px }
+.field-input{ width:100%; height:50px; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; font-size:15px; color:var(--text); box-sizing:border-box }
+.field-select{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff }
+.field-textarea{ width:100%; min-height:350px; border-radius:12px; border:1px solid var(--border); padding:8px; background:#fafafa }
+.field-help{ color:var(--muted); font-size:13px; margin-top:6px }
+.field-error{ color:#DC2626; font-size:13px; margin-top:6px }
+
+/* Grid for difficulty/language/category */
+.form-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:24px; }
+@media (max-width: 900px){ .form-grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px){ .form-grid{ grid-template-columns: 1fr; } }
+
+/* Tags suggestions */
+.tag-suggestions{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap }
+.tag-suggestion{ background:transparent; border:1px solid rgba(16,24,40,0.04); padding:6px 10px; border-radius:999px; cursor:pointer; color:var(--primary); }
+
+/* Buttons */
+.form-actions{ display:flex; justify-content:flex-end; gap:12px; margin-top:6px }
+.btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; text-decoration:none; }
+.btn-primary{ background:var(--primary); color:#fff; border:1px solid var(--primary); }
+.btn-primary:hover{ background:var(--primary-hover); transform:translateY(-2px); box-shadow:0 12px 30px rgba(37,99,235,0.12); }
+.btn-outline{ background:transparent; color:var(--text); border:1px solid var(--border); }
+.btn-outline:hover{ background:#f8fafc; transform:translateY(-1px); }
+
+/* EasyMDE overrides to match card */
+.CodeMirror, .editor-toolbar, .EasyMDEContainer, .easyMDEWrapper{ border-radius:10px !important; }
+.editor-toolbar{ border-radius:10px 10px 0 0 !important }
+.easyMDEContainer .CodeMirror{ min-height:350px; padding:12px; background:#fff }
+
+/* Accessibility focus */
+.field-input:focus, .field-select:focus, .field-textarea:focus, .CodeMirror:focus{ outline:3px solid rgba(37,99,235,0.12); }
+
+/* Mobile tweaks */
+@media (max-width:520px){ .problem-card{ padding:20px } .pc-title{ font-size:22px } }
+
+/* Preserve existing form-control/form-select classes usage via compatibility */
+.form-control{ box-sizing:border-box }
+.form-select{ box-sizing:border-box }
+
+/* Preserve EasyMDE dark theme support */
+[data-bs-theme="dark"] .field-textarea{ background:#0f172a }
+[data-bs-theme="dark"] .problem-card{ background:#0b1220; border-color:#1f2937 }

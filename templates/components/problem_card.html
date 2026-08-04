@@ -1,0 +1,12 @@
+{# Problem card used in problem lists. Keeps template vars unchanged. #}
+<div class="op-card dl-problem-card">
+  <div class="op-card-body">
+    <h3 class="op-title"><a href="{{ problem.get_absolute_url }}">{{ problem.title }}</a></h3>
+    <p class="op-desc text-muted">{{ problem.excerpt }}</p>
+    <div class="op-meta d-flex align-items-center">
+      <div class="me-3 text-muted">{{ problem.views }} views</div>
+      <div class="me-3 text-muted">{{ problem.answers_count }} answers</div>
+      <div class="dl-tags">{% for tag in problem.tags_list %}<span class="dl-tag">{{ tag }}</span>{% endfor %}</div>
+    </div>
+  </div>
+</div>

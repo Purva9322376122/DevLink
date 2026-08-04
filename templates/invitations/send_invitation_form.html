@@ -1,0 +1,54 @@
+<div class="send-invite-card p-4 rounded-2xl bg-white shadow-sm">
+  <h3 class="mb-2">Connect with Developers</h3>
+  <p class="text-muted small mb-3">Find talented developers and collaborate.</p>
+
+  <form method="POST" action="{% url 'send_invitation' %}" id="send-invite-form">
+    {% csrf_token %}
+    <div class="mb-3 position-relative">
+      <label class="form-label visually-hidden">Username</label>
+      <div class="input-group input-lg">
+        <span class="input-group-text"><i class="bi bi-person"></i></span>
+        <input type="text" name="username" class="form-control form-control-lg" placeholder="Username (e.g. jane_doe)" required aria-label="Username">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label visually-hidden">Message (optional)</label>
+      <textarea name="message" id="invite-message" class="form-control form-control-lg" rows="4" placeholder="Why do you want to connect? (optional)" aria-label="Invitation message"></textarea>
+      <div class="small text-muted mt-2 text-end" id="char-count">0 / 500</div>
+    </div>
+
+    <div class="d-grid mt-3">
+      <button type="submit" class="btn btn-primary btn-lg" id="send-invite-btn" aria-label="Send invitation">
+        <span class="btn-label"><i class="bi bi-send me-2" aria-hidden="true"></i> Connect</span>
+        <span class="btn-loading d-none"><i class="bi bi-arrow-repeat spinner-border-sm me-2" aria-hidden="true"></i>Sending...</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+// Minimal JS to show loading state on submit
+(function(){
+  var form = document.getElementById('send-invite-form');
+  if(!form) return;
+  var btn = document.getElementById('send-invite-btn');
+  var label = btn.querySelector('.btn-label');
+  var loading = btn.querySelector('.btn-loading');
+  form.addEventListener('submit', function(){
+    if(btn) {
+      btn.disabled = true;
+      if(label) label.classList.add('d-none');
+      if(loading) loading.classList.remove('d-none');
+    }
+  });
+  // character counter
+  var ta = document.getElementById('invite-message');
+  var cc = document.getElementById('char-count');
+  if(ta && cc){
+    ta.addEventListener('input', function(){
+      cc.textContent = ta.value.length + ' / 500';
+    });
+  }
+})();
+</script>

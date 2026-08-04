@@ -1,0 +1,204 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container-xl" role="main">
+  <div class="profile-page">
+
+    <!-- Profile Header -->
+    <section class="profile-hero dl-card" aria-labelledby="profile-heading">
+      <div class="hero-inner">
+        <div class="hero-left">
+          {% if profile.profile_image %}
+            <img src="{{ profile.profile_image.url }}" alt="{{ profile_user.username }}" class="hero-avatar">
+          {% else %}
+            <div class="hero-avatar placeholder">{{ profile_user.username|slice:":1"|upper }}</div>
+          {% endif %}
+        </div>
+
+        <div class="hero-center">
+          <h1 id="profile-heading" class="hero-username">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+          <div class="text-muted">@{{ profile_user.username }}</div>
+          {% if profile.title %}
+            <div class="hero-tagline">{{ profile.title }}</div>
+          {% endif %}
+          <p class="hero-bio">{% if profile.bio %}{{ profile.bio }}{% else %}<span class="muted">No bio added yet.</span>{% endif %}</p>
+
+          <div class="hero-links">
+            {% if profile.location %}<div class="me-3"><i class="bi bi-geo-alt"></i> {{ profile.location }}</div>{% endif %}
+            {% if profile.website %}<div class="me-3"><i class="bi bi-link-45deg"></i> <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a></div>{% endif %}
+            {% if profile.github %}<a href="{{ profile.github }}" target="_blank" rel="noopener noreferrer" class="link-item"> <i class="bi bi-github"></i> GitHub</a>{% endif %}
+            {% if profile.linkedin %}<a href="{{ profile.linkedin }}" target="_blank" rel="noopener noreferrer" class="link-item"> <i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+          </div>
+        </div>
+
+        <div class="hero-right">
+          {% if request.user == profile_user %}
+            <a href="{% url 'accounts:edit_profile' %}" class="dl-btn dl-btn-primary" aria-label="Edit profile">Edit Profile</a>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Statistics Cards -->
+    <section class="stats-grid" aria-label="Profile statistics">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-question-circle"></i></div>
+        <div class="stat-number">{{ problems|length }}</div>
+        <div class="stat-label">Problems</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-file-earmark-code"></i></div>
+        <div class="stat-number">{{ total_solutions }}</div>
+        <div class="stat-label">Solutions</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-people"></i></div>
+        <div class="stat-number">{% if profile.connections_count %}{{ profile.connections_count }}{% else %}—{% endif %}</div>
+        <div class="stat-label">Connections</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-star-fill text-warning"></i></div>
+        <div class="stat-number">{% if profile.reputation %}{{ profile.reputation }}{% else %}0{% endif %}</div>
+        <div class="stat-label">Reputation</div>
+      </div>
+    </section>
+
+    <!-- Main content grid -->
+    <div class="content-grid">
+
+      <!-- Left column: contributions, about, skills, recent problems/solutions -->
+      <div class="col-left">
+
+        <article class="card contributions-card" aria-labelledby="contrib-heading">
+          <h3 id="contrib-heading">Contribution Activity</h3>
+          <div class="contrib-stats">
+            <div><strong id="contribution-total">0</strong><div class="muted">Total</div></div>
+            <div><strong id="active-days">0</strong><div class="muted">Active days</div></div>
+            <div><strong id="current-streak">0</strong><div class="muted">Current streak</div></div>
+            <div><strong id="max-streak">0</strong><div class="muted">Longest streak</div></div>
+          </div>
+          <div id="contribution-graph" class="contribution-graph" aria-hidden="false"></div>
+          <div id="contribution-data" class="hidden">
+              {% for problem in problems %}
+                  <span data-date="{{ problem.created_at|date:'Y-m-d' }}"></span>
+              {% endfor %}
+              {% for sol in solutions %}
+                  <span data-date="{{ sol.created_at|date:'Y-m-d' }}"></span>
+              {% endfor %}
+          </div>
+        </article>
+
+        <article class="card about-card" aria-labelledby="about-heading">
+          <h3 id="about-heading">About</h3>
+          <p class="about-text">{% if profile.bio %}{{ profile.bio }}{% else %}<span class="muted">No bio added yet.</span>{% endif %}</p>
+        </article>
+
+        <section class="card skills-card" aria-labelledby="skills-heading">
+          <h3 id="skills-heading">Skills</h3>
+          {% if top_skills %}
+            <div class="skills-list">
+              {% for skill, count in top_skills %}
+                <span class="skill-badge">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="muted">No skills yet.</p>
+          {% endif %}
+        </section>
+
+        <section class="card recent-card" aria-labelledby="recent-problems-heading">
+          <h3 id="recent-problems-heading">Recent Problems</h3>
+          {% if problems %}
+            {% for problem in problems|slice:":5" %}
+              <div class="activity-item">
+                <i class="bi bi-file-earmark-text"></i>
+                <div class="activity-body">
+                  <a href="{% url 'problem_detail' problem.id %}">{{ problem.title }}</a>
+                  <div class="small muted">{{ problem.created_at|date:"M d, Y" }}</div>
+                </div>
+              </div>
+            {% endfor %}
+            <div class="mt-2"><a href="{% url 'problem_list' %}" class="btn-secondary">View all problems</a></div>
+          {% else %}
+            <p class="muted">No problems posted.</p>
+          {% endif %}
+        </section>
+
+        <section class="card recent-card" aria-labelledby="recent-solutions-heading">
+          <h3 id="recent-solutions-heading">Recent Solutions</h3>
+          {% if solutions %}
+            {% for sol in solutions|slice:":5" %}
+              <div class="activity-item">
+                <i class="bi bi-code"></i>
+                <div class="activity-body">
+                  <a href="{% url 'problem_detail' sol.problem.id %}">Solution to {{ sol.problem.title }}</a>
+                  <div class="small muted">{{ sol.created_at|date:"M d, Y" }}</div>
+                </div>
+              </div>
+            {% endfor %}
+            
+          {% else %}
+            <p class="muted">No solutions yet.</p>
+          {% endif %}
+        </section>
+
+      </div>
+
+      <!-- Right column: opportunities, activity timeline, links -->
+      <aside class="col-right">
+        <section class="card opportunities-card" aria-labelledby="opps-heading">
+          <h3 id="opps-heading">Opportunities</h3>
+          {% if opportunities %}
+            {% for opp in opportunities|slice:":5" %}
+              {% include 'opportunities/opportunities/opportunity_card.html' with opp=opp %}
+            {% endfor %}
+            <div class="mt-2"><a href="{% url 'opportunity_list' %}" class="btn-secondary">View all opportunities</a></div>
+          {% else %}
+            <p class="muted">No opportunities.</p>
+          {% endif %}
+        </section>
+
+        <section class="card activity-card" aria-labelledby="activity-heading">
+          <h3 id="activity-heading">Activity Timeline</h3>
+          {% if activity_list %}
+            <ul class="timeline">
+              {% for act in activity_list|slice:":20" %}
+                <li>
+                  <div class="timeline-item">
+                    <div class="timeline-meta small muted">{{ act.created_at|timesince }} ago</div>
+                    <div class="timeline-body">{{ act.message }}</div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">No recent activity.</p>
+          {% endif %}
+        </section>
+
+        <section class="card links-card" aria-labelledby="links-heading">
+          <h3 id="links-heading">Links</h3>
+          <div class="links-list">
+            <p><strong>GitHub:</strong> {% if profile.github %}<a href="{{ profile.github }}">{{ profile.github }}</a>{% else %}<span class="muted">Not added</span>{% endif %}</p>
+            <p><strong>LinkedIn:</strong> {% if profile.linkedin %}<a href="{{ profile.linkedin }}">{{ profile.linkedin }}</a>{% else %}<span class="muted">Not added</span>{% endif %}</p>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/profile.js' %}"></script>
+{% endblock %}

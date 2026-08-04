@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="messages-app">
+  <div class="messages-inner">
+
+    <!-- LEFT: Sidebar -->
+    <div class="d-none d-lg-block">
+      {% include 'messages/sidebar.html' %}
+    </div>
+
+    <!-- Mobile: collapsible top bar -->
+    <div class="d-lg-none w-100 mb-2">
+      <div class="d-flex align-items-center justify-content-between p-2 bg-white rounded-3 shadow-sm">
+        <strong>Messages</strong>
+        <div>
+          <button id="mobile-open-sidebar" class="btn btn-sm btn-outline-secondary" aria-label="Open conversations">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Chat area -->
+    <div class="chat-col" aria-live="polite">
+
+      <div id="chat-container">
+
+        <!-- Chat header (placeholder when no peer selected) -->
+        <div id="chat-header-placeholder" class="chat-header">
+          <div>
+            <h2 class="title mb-0">Select a conversation</h2>
+            <div class="subtitle small">Start a new chat or pick an existing conversation to begin.</div>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-primary" id="btn-new-chat">New Chat</button>
+          </div>
+        </div>
+
+        <!-- Messages area -->
+        <div id="messages-area" tabindex="0">
+
+          {% if conversations and conversations|length > 0 %}
+            <!-- Show an empty conversation panel encouraging selection -->
+            <div class="empty-chat">
+              <img src="https://cdn.jsdelivr.net/gh/ikonate/ikonate@main/svg/illustrations/chat.svg" alt="No chat">
+              <h4 class="mt-3">No conversation selected</h4>
+              <p class="mb-0">Select a conversation from the left or start a new chat.</p>
+            </div>
+          {% else %}
+            <div class="empty-chat">
+              <div class="display-1 mb-3">💬</div>
+              <h4>Welcome to DevLink Messages</h4>
+              <p class="mb-0">Start connecting with developers and collaborate in real time.</p>
+            </div>
+          {% endif %}
+
+        </div>
+
+        <!-- Message composer placeholder -->
+        <div id="composer-placeholder" class="composer">
+          {% include 'messages/message_input.html' %}
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/messages.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/connections.css' %}">
+<link rel="stylesheet" href="{% static 'css/invitations.css' %}">
+{% endblock %}
+
+{% block title %}Received Invitations — DevLink{% endblock %}
+
+{% block content %}
+<main class="connections-container invitations-container">
+
+  <!-- ── Hero Page Header ───────────────────────────────────── -->
+  <header class="connections-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Received Invitations</h1>
+        <p class="header-subtitle">Manage connection requests and collaboration invites from other developers.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="header-btn header-btn-primary" onclick="openFindDevelopersModal()">
+          <i class="bi bi-person-plus-fill"></i> Find Developers
+        </button>
+        <a href="{% url 'sent_invitations' %}" class="header-btn header-btn-secondary">
+          <i class="bi bi-send-fill"></i> Sent Invitations
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Statistics Section (4 equal cards) ─────────────────── -->
+  <section class="connections-stats-grid" aria-label="Received Invitations Statistics">
+    <!-- Stat 1: Total Received -->
+    <div class="stat-card" data-aos="fade-up">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Total Requests</span>
+        <div class="stat-card-icon stat-icon-blue">
+          <i class="bi bi-inbox-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ invitations|length }}</div>
+        <div class="stat-card-subtext">Received invitations</div>
+      </div>
+    </div>
+
+    <!-- Stat 2: Accepted -->
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Accepted</span>
+        <div class="stat-card-icon stat-icon-green">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ accepted_count }}</div>
+        <div class="stat-card-subtext">Connected developers</div>
+      </div>
+    </div>
+
+    <!-- Stat 3: Pending -->
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Pending</span>
+        <div class="stat-card-icon stat-icon-amber">
+          <i class="bi bi-clock-history"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ pending_count }}</div>
+        <div class="stat-card-subtext">
+          {% if pending_count > 0 %}Requires action{% else %}All clear{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat 4: Declined -->
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+      <div class="stat-card-top">
+        <span class="stat-card-title">Declined</span>
+        <div class="stat-card-icon stat-icon-red">
+          <i class="bi bi-x-circle-fill"></i>
+        </div>
+      </div>
+      <div>
+        <div class="stat-card-value">{{ rejected_count }}</div>
+        <div class="stat-card-subtext">Declined invites</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Search & Filter Bar ────────────────────────────── -->
+  <div class="search-bar-wrapper">
+    <div class="search-filters">
+      <div class="search-input-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input 
+          type="search" 
+          id="invitation-search" 
+          placeholder="Search invitations..." 
+          aria-label="Search invitations"
+          class="search-input-field"
+        >
+      </div>
+
+      <div class="filters-group">
+        <select id="invitation-status-filter" class="filter-select" aria-label="Filter by status">
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="declined">Declined</option>
+        </select>
+
+        <select id="invitation-sort-select" class="filter-select" aria-label="Sort invitations">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="name">Name</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cards Grid (Identical Alignment to Connections Page) ── -->
+  <section class="connections-list-section" aria-live="polite" aria-label="List of received invitations">
+    {% if invitations %}
+      <div class="connections-grid" id="invitations-cards-list">
+        {% for invite in invitations %}
+        {% with other=invite.other_user %}
+        {% with initials=other.username|slice:":2"|upper %}
+
+        <article 
+          class="connection-card invitation-card" 
+          data-aos="fade-up"
+          data-name="{{ other.get_full_name|default:other.username|lower }}"
+          data-username="{{ other.username|lower }}"
+          data-message="{{ invite.message|default:''|lower }}"
+          data-status="{% if invite.status == 'accepted' %}accepted{% elif invite.status == 'pending' %}pending{% else %}declined{% endif %}"
+          data-timestamp="{{ invite.created_at|date:'U' }}"
+        >
+          <!-- Card Header: Avatar, Name, Username, Role, Menu -->
+          <div class="connection-card-header">
+            <div class="connection-avatar-wrapper">
+              <a href="{% url 'accounts:profile' other.username %}" aria-label="Profile of {{ other.username }}">
+                {% if invite.other_profile_image_url %}
+                  <img src="{{ invite.other_profile_image_url }}" alt="{{ other.username }}" class="connection-avatar">
+                {% else %}
+                  <div class="invitation-avatar-initials">{{ initials }}</div>
+                {% endif %}
+              </a>
+              <span class="connection-status-dot {% if invite.status == 'accepted' %}status-online{% else %}status-offline{% endif %}"></span>
+            </div>
+
+            <div class="connection-user-info">
+              <h3 class="connection-name">
+                <a href="{% url 'accounts:profile' other.username %}">
+                  {{ other.get_full_name|default:other.username }}
+                </a>
+              </h3>
+              <p class="connection-username">@{{ other.username }}</p>
+              <p class="connection-role">
+                <i class="bi bi-briefcase"></i> {{ invite.other_profile_job_title|default:"Software Developer" }}
+              </p>
+            </div>
+
+            <!-- More Menu (Three Dots Dropdown) -->
+            <div class="connection-menu-wrapper">
+              <button type="button" class="connection-menu-btn" onclick="toggleCardMenu(event, 'menu-{{ invite.id }}')" aria-label="More options">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <div class="connection-dropdown-menu" id="menu-{{ invite.id }}">
+                <a href="{% url 'accounts:profile' other.username %}" class="dropdown-action-item">
+                  <i class="bi bi-person"></i> View Profile
+                </a>
+                <a href="{% url 'messages:start' other.username %}" class="dropdown-action-item">
+                  <i class="bi bi-chat-dots"></i> Message
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Body: Meta info, Status Badge, Quote Message, Skills -->
+          <div class="connection-card-body">
+            <div class="connection-meta-row">
+              <span class="connection-meta-item" title="Time Received">
+                <i class="bi bi-clock-history"></i> {{ invite.created_at|naturaltime }}
+              </span>
+              {% if invite.status == 'accepted' %}
+                <span class="status-badge status-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span>
+              {% elif invite.status == 'pending' %}
+                <span class="status-badge status-pending"><i class="bi bi-clock-history"></i> Pending</span>
+              {% else %}
+                <span class="status-badge status-declined"><i class="bi bi-x-circle-fill"></i> Declined</span>
+              {% endif %}
+            </div>
+
+            <p class="connection-bio invitation-message-quote">
+              {% if invite.message %}
+                "{{ invite.message }}"
+              {% else %}
+                No message attached.
+              {% endif %}
+            </p>
+
+            <div class="connection-skills">
+              <span class="skill-tag">{{ invite.other_profile_job_title|default:"Developer" }}</span>
+              {% if invite.other_profile_skills %}
+                <span class="skill-tag">{{ invite.other_profile_skills }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Card Footer Actions: Accept / Decline or Profile -->
+          <div class="connection-card-footer">
+            {% if invite.is_incoming and invite.status == 'pending' %}
+              <form method="POST" action="{% url 'accept_invitation' invite.id %}" style="margin:0; flex:1;">
+                {% csrf_token %}
+                <button type="submit" class="btn-card-action btn-card-primary w-100">
+                  <i class="bi bi-check-lg"></i> Accept
+                </button>
+              </form>
+              <form method="POST" action="{% url 'reject_invitation' invite.id %}" style="margin:0; flex:1;">
+                {% csrf_token %}
+                <button type="submit" class="btn-card-action btn-card-outline text-danger border-danger w-100">
+                  <i class="bi bi-x-lg"></i> Decline
+                </button>
+              </form>
+            {% else %}
+              <a href="{% url 'accounts:profile' other.username %}" class="btn-card-action btn-card-outline">
+                <i class="bi bi-person"></i> Profile
+              </a>
+              {% if invite.status == 'accepted' %}
+                <a href="{% url 'messages:start' other.username %}" class="btn-card-action btn-card-primary">
+                  <i class="bi bi-chat-dots-fill"></i> Message
+                </a>
+              {% endif %}
+            {% endif %}
+          </div>
+        </article>
+
+        {% endwith %}
+        {% endwith %}
+        {% endfor %}
+      </div>
+
+      <!-- No Filter Results Message -->
+      <div id="no-filter-results" class="empty-state d-none">
+        <div class="empty-state-content">
+          <i class="bi bi-search empty-state-icon"></i>
+          <h3 class="empty-state-title">No Invitations Found</h3>
+          <p class="empty-state-description">No invitations match your current search or filter criteria.</p>
+          <button type="button" class="btn-card-primary" onclick="resetFilters()">Reset Filters</button>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="empty-state" data-aos="fade-up">
+        <div class="empty-state-content">
+          <i class="bi bi-inbox empty-state-icon"></i>
+          <h3 class="empty-state-title">No Invitations Found</h3>
+          <p class="empty-state-description">
+            When someone sends you a connection request, it will appear here. Find developers and start growing your network!
+          </p>
+          <button type="button" class="header-btn header-btn-primary empty-state-button" onclick="openFindDevelopersModal()">
+            <i class="bi bi-person-plus-fill"></i> Find Developers
+          </button>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+</main>
+
+<!-- Find Developers Modal -->
+<div class="custom-modal-backdrop" id="findDevelopersModal">
+  <div class="custom-modal">
+    <div class="custom-modal-header">
+      <h3 class="custom-modal-title">
+        <i class="bi bi-person-plus-fill text-primary"></i> Connect with Developers
+      </h3>
+      <button type="button" class="custom-modal-close" onclick="closeFindDevelopersModal()">&times;</button>
+    </div>
+    <div class="custom-modal-body">
+      <form method="POST" action="{% url 'send_invitation' %}">
+        {% csrf_token %}
+        <div class="modal-form-group">
+          <label class="modal-form-label">Developer Username</label>
+          <div class="modal-input-group">
+            <span class="modal-input-addon"><i class="bi bi-at"></i></span>
+            <input type="text" name="username" class="modal-input-field" placeholder="e.g. jane_doe" required>
+          </div>
+        </div>
+
+        <div class="modal-form-group">
+          <label class="modal-form-label">Invitation Message</label>
+          <textarea name="message" class="modal-textarea-field" rows="3" placeholder="Why do you want to connect? (optional)"></textarea>
+        </div>
+
+        <button type="submit" class="modal-submit-btn">
+          <i class="bi bi-send-fill"></i> Send Invitation
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('invitation-search');
+  const statusFilter = document.getElementById('invitation-status-filter');
+  const sortSelect = document.getElementById('invitation-sort-select');
+  const cardsContainer = document.getElementById('invitations-cards-list');
+  const noResults = document.getElementById('no-filter-results');
+
+  if (!cardsContainer) return;
+
+  function filterAndSortCards() {
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const status = statusFilter ? statusFilter.value : 'all';
+    const sort = sortSelect ? sortSelect.value : 'newest';
+
+    const cards = Array.from(cardsContainer.querySelectorAll('.invitation-card'));
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const name = card.dataset.name || '';
+      const username = card.dataset.username || '';
+      const message = card.dataset.message || '';
+      const cardStatus = card.dataset.status || '';
+
+      const matchesSearch = !query || name.includes(query) || username.includes(query) || message.includes(query);
+      const matchesStatus = status === 'all' || cardStatus === status;
+
+      if (matchesSearch && matchesStatus) {
+        card.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (noResults) {
+      if (visibleCount === 0 && cards.length > 0) {
+        noResults.classList.remove('d-none');
+      } else {
+        noResults.classList.add('d-none');
+      }
+    }
+
+    cards.sort((a, b) => {
+      if (sort === 'newest') {
+        return parseInt(b.dataset.timestamp || 0) - parseInt(a.dataset.timestamp || 0);
+      } else if (sort === 'oldest') {
+        return parseInt(a.dataset.timestamp || 0) - parseInt(b.dataset.timestamp || 0);
+      } else if (sort === 'name') {
+        return (a.dataset.name || '').localeCompare(b.dataset.name || '');
+      }
+      return 0;
+    });
+
+    cards.forEach(card => cardsContainer.appendChild(card));
+  }
+
+  if (searchInput) searchInput.addEventListener('input', filterAndSortCards);
+  if (statusFilter) statusFilter.addEventListener('change', filterAndSortCards);
+  if (sortSelect) sortSelect.addEventListener('change', filterAndSortCards);
+
+  window.resetFilters = function() {
+    if (searchInput) searchInput.value = '';
+    if (statusFilter) statusFilter.value = 'all';
+    if (sortSelect) sortSelect.value = 'newest';
+    filterAndSortCards();
+  };
+});
+
+function toggleCardMenu(event, menuId) {
+  event.stopPropagation();
+  document.querySelectorAll('.connection-dropdown-menu').forEach(menu => {
+    if (menu.id !== menuId) menu.classList.remove('show');
+  });
+  const menu = document.getElementById(menuId);
+  if (menu) menu.classList.toggle('show');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.connection-menu-wrapper')) {
+    document.querySelectorAll('.connection-dropdown-menu').forEach(menu => menu.classList.remove('show'));
+  }
+});
+
+function openFindDevelopersModal() {
+  const modal = document.getElementById('findDevelopersModal');
+  if (modal) modal.classList.add('show');
+}
+
+function closeFindDevelopersModal() {
+  const modal = document.getElementById('findDevelopersModal');
+  if (modal) modal.classList.remove('show');
+}
+
+document.getElementById('findDevelopersModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeFindDevelopersModal();
+});
+</script>
+{% endblock %}

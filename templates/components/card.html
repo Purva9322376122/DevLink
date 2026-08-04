@@ -1,0 +1,19 @@
+{# Reusable card component
+   Usage example: {% include 'components/card.html' with title='My Title' body=body_var footer=footer_var %}
+   Expect caller to pass 'body' as safe HTML or block content. #}
+<div class="card dl-card {{ extra_class|default:'' }}">
+  {% if title %}
+  <div class="card-header dl-card-header">
+    <h3 class="h5 mb-0">{{ title }}</h3>
+  </div>
+  {% endif %}
+  <div class="card-body dl-card-body">
+    {{ body|default:body|safe }}
+    {% block card_body %}{% endblock %}
+  </div>
+  {% if footer %}
+  <div class="card-footer dl-card-footer">
+    {{ footer }}
+  </div>
+  {% endif %}
+</div>

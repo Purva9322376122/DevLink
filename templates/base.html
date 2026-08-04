@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DevLink{% endblock %}</title>
+
+  <!-- Anti-FOUC: set default light theme -->
+  <script>(function(){document.documentElement.setAttribute('data-bs-theme','light');document.documentElement.setAttribute('data-theme','light');})();</script>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- AOS animations -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+  <!-- DevLink brand CSS -->
+  <link rel="stylesheet" href="{% static 'css/devlink.css' %}">
+  <!-- Design system -->
+  <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+  <!-- Component-level styles -->
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <!-- Global site styles (layout, grid, cards) -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+  <!-- Navbar styles (loaded last for guaranteed precedence) -->
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+</head>
+<body>
+
+<!-- â”€â”€ Navbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+{% include 'components/navbar.html' %}
+
+<!-- â”€â”€ Django messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+{% if messages %}
+<div class="dl-page-messages">
+  {% for message in messages %}
+  <div class="dl-alert dl-alert-{{ message.tags|default:'info' }}">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- â”€â”€ Main content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<main class="dl-main">
+  <div class="dl-page-container">
+    <div class="dl-grid">
+      <div class="dl-main-col">
+  {% block content %}{% endblock %}
+      </div>
+      <aside class="dl-sidebar">
+        {% block sidebar %}{% endblock %}
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- â”€â”€ Scripts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="{% static 'js/navbar.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/site.js' %}"></script>
+
+{% if user.is_authenticated %}
+<script src="{% static 'js/notifications.js' %}"></script>
+{% endif %}
+
+<script>AOS.init({duration:400,once:true,offset:50});</script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>
+
+

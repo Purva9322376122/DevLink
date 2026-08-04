@@ -1,0 +1,22 @@
+{# Message bubble partial: expects 'message' and boolean 'is_outgoing' #}
+<div class="message-row d-flex mb-2 {% if is_outgoing %}justify-content-end{% else %}justify-content-start{% endif %}">
+  <div class="message-bubble-wrapper position-relative">
+    {% if not is_outgoing %}
+      <img src="{{ message.sender_profile_image_url|default:'https://ui-avatars.com/api/?name='|add:message.sender.username|add:'&background=94a3b8&color=ffffff&size=40' }}" alt="{{ message.sender.username }}" class="rounded-circle me-2 message-thumb d-none d-md-inline" width="36" height="36" onerror="this.src='https://ui-avatars.com/api/?name={{ message.sender.username }}&background=94a3b8&color=ffffff&size=40'">
+    {% endif %}
+
+    <div class="message-bubble {% if is_outgoing %}outgoing{% else %}incoming{% endif %}" role="article" aria-label="Message from {{ message.sender.username }}">
+      <div class="message-content">{{ message.content|linebreaksbr }}</div>
+      <div class="message-meta d-flex align-items-center gap-2 small text-muted mt-1">
+        <span class="message-time">{{ message.timestamp|time }}</span>
+        {% if is_outgoing %}
+          {% if message.is_read %}
+            <i class="bi bi-check2-all text-primary" aria-label="Read"></i>
+          {% else %}
+            <i class="bi bi-check2" aria-label="Sent"></i>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+{# Sidebar partial: expects 'conversations' and optional 'pinned_conversations' #}
+<aside class="messages-sidebar" aria-label="Conversations sidebar">
+  <div class="sidebar-card p-3">
+    <div class="sidebar-top d-flex align-items-center gap-2">
+      <div class="position-relative flex-grow-1">
+        <input id="messages-search" class="form-control form-control-sm" type="search" placeholder="Search conversations" aria-label="Search conversations">
+        <button id="clear-search" class="btn btn-sm btn-link position-absolute end-0 top-0" style="right:.35rem;top:.35rem;display:none">&times;</button>
+      </div>
+      <button id="new-chat-btn" class="btn btn-primary btn-sm ms-2" aria-label="New chat">
+        <i class="bi bi-plus-lg"></i>
+        <span class="d-none d-md-inline ms-1">New Chat</span>
+      </button>
+    </div>
+
+    <div class="sidebar-sections mt-3">
+      {% if pinned_conversations %}
+      <div class="pinned-section mb-2">
+        <h6 class="text-muted small mb-2">Pinned</h6>
+        <div class="list-group list-group-flush pinned-list">
+          {% for convo in pinned_conversations %}
+            {% include 'messages/conversation_card.html' with convo=convo %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="recent-section">
+        <h6 class="text-muted small mb-2">Recent</h6>
+        <div id="convo-list" class="list-group list-group-flush convo-list" tabindex="0">
+          {% for convo in conversations %}
+            {% include 'messages/conversation_card.html' with convo=convo %}
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sidebar-footer mt-3 text-center text-muted small">
+      <span id="unread-counter">{{ unread_message_count }}</span>
+    </div>
+  </div>
+</aside>

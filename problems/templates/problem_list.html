@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/problems.css' %}">
+{% endblock %}
+
+{% block title %}Problems — DevLink{% endblock %}
+
+{% block content %}
+<main class="problems-container">
+  <!-- Page Header -->
+  <header class="problems-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Problems</h1>
+        <p class="header-subtitle">Browse technical questions shared by the community.</p>
+      </div>
+      {% if user.is_authenticated %}
+      <a href="{% url 'create_problem' %}" class="dl-btn dl-btn-primary header-btn" aria-label="Ask a problem">
+        <i class="bi bi-plus-lg"></i> Ask Problem
+      </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Search & Filter Bar -->
+  <div class="search-bar-wrapper">
+    <form method="get" class="search-filters" role="search" aria-label="Search and filter problems">
+      <div class="search-input-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input 
+          type="search" 
+          name="q" 
+          value="{{ query|default:'' }}" 
+          placeholder="Search problems, tags, or users..." 
+          aria-label="Search problems"
+          class="search-input-field"
+        >
+      </div>
+
+      <div class="filters-group">
+        <select name="sort" class="filter-select" aria-label="Sort by">
+          <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Most Popular</option>
+        </select>
+
+        {% if popular_tags %}
+        <select name="tag" class="filter-select" aria-label="Filter by tag">
+          <option value="">All Tags</option>
+          {% for tag in popular_tags %}
+          <option value="{{ tag.name }}" {% if selected_tag == tag.name %}selected{% endif %}>
+            {{ tag.name }}
+          </option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        <button type="submit" class="filter-button" aria-label="Apply filters">
+          <i class="bi bi-funnel"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Problems List Section -->
+  <section class="problems-list" aria-live="polite" aria-label="List of problems">
+    {% if problems %}
+      {% for problem in problems %}
+      <article class="problem-card" data-aos="fade-up">
+        <!-- Card Header with Status -->
+        <div class="card-header">
+          <div class="card-title-wrapper">
+            <h2 class="card-title">
+              <a href="{% url 'problem_detail' problem.id %}" class="card-title-link">
+                {{ problem.title }}
+              </a>
+            </h2>
+          </div>
+          <div class="card-status">
+            {% if problem.difficulty %}
+              {% if problem.difficulty == 'easy' %}
+                <span class="status-badge status-easy" aria-label="Difficulty: Easy">
+                  <i class="bi bi-circle-fill"></i> Easy
+                </span>
+              {% elif problem.difficulty == 'medium' %}
+                <span class="status-badge status-medium" aria-label="Difficulty: Medium">
+                  <i class="bi bi-circle-fill"></i> Medium
+                </span>
+              {% elif problem.difficulty == 'hard' %}
+                <span class="status-badge status-hard" aria-label="Difficulty: Hard">
+                  <i class="bi bi-circle-fill"></i> Hard
+                </span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Card Description -->
+        <div class="card-body">
+          <p class="card-description">
+            {{ problem.description|truncatewords:25 }}
+          </p>
+
+          <!-- Tags -->
+          {% if problem.tags.all %}
+          <div class="card-tags">
+            {% for tag in problem.tags.all %}
+              <a href="?tag={{ tag.name }}" class="tag-badge" aria-label="Filter by tag: {{ tag.name }}">
+                {{ tag.name }}
+              </a>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-footer">
+          <div class="author-section">
+            <div class="author-avatar">
+              {% if problem.user.profile.profile_image %}
+                <img src="{{ problem.user.profile.profile_image.url }}" alt="{{ problem.user.username }}">
+              {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ problem.user.username }}&background=E5E7EB&color=111827" alt="{{ problem.user.username }}">
+              {% endif %}
+            </div>
+            <div class="author-info">
+              <a href="{% url 'accounts:profile' problem.user.username %}" class="author-name">
+                {{ problem.user.username }}
+              </a>
+              <span class="post-time">{{ problem.created_at|timesince }} ago</span>
+            </div>
+          </div>
+
+          <div class="engagement-metrics">
+            <div class="metric">
+              <i class="bi bi-chat-left-text"></i>
+              <span aria-label="Number of solutions">{{ problem.solutions.count }}</span>
+            </div>
+            <div class="metric">
+              <i class="bi bi-eye"></i>
+              <span aria-label="Number of views">{{ problem.view_count }}</span>
+            </div>
+            <a href="{% url 'problem_detail' problem.id %}" class="view-button" aria-label="View problem details">
+              View <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+
+      <!-- Pagination -->
+      {% if page_obj and page_obj.paginator.num_pages > 1 %}
+      <nav class="pagination-wrapper" aria-label="Pagination">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous page">
+                <i class="bi bi-chevron-left"></i> Previous
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">
+                <i class="bi bi-chevron-left"></i> Previous
+              </span>
+            </li>
+          {% endif %}
+
+          {% for p in page_obj.paginator.page_range %}
+            {% if page_obj.number == p %}
+              <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ p }}</span>
+              </li>
+            {% elif p|add:'-2' <= page_obj.number and p|add:'2' >= page_obj.number %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ p }}" aria-label="Page {{ p }}">{{ p }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next page">
+                Next <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">
+                Next <i class="bi bi-chevron-right"></i>
+              </span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-content">
+          <i class="bi bi-inbox empty-state-icon"></i>
+          <h3 class="empty-state-title">No problems yet</h3>
+          <p class="empty-state-description">
+            No problems have been posted yet. Be the first to share a technical question with the community!
+          </p>
+          {% if user.is_authenticated %}
+            <a href="{% url 'create_problem' %}" class="dl-btn dl-btn-primary empty-state-button">
+              <i class="bi bi-plus-lg"></i> Ask the First Problem
+            </a>
+          {% else %}
+            <p class="empty-state-hint">Sign in to ask a question or contribute solutions.</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

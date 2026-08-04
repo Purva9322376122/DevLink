@@ -1,0 +1,191 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Resource guardrails (deploy.resources is honored by Docker Swarm; modern compose tools may also respect these)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ── Django (Gunicorn / HTTP) ─────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      target: production
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: Connect.settings.production
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "8000"
+    entrypoint: ["/app/docker/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ── Daphne (ASGI / WebSocket) ────────────────────────────────────────────────
+  daphne:
+    build:
+      context: .
+      target: production
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: Connect.settings.production
+    command: daphne -b 0.0.0.0 -p 8001 Connect.asgi:application
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - web
+      - redis
+    expose:
+      - "8001"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ── Celery Worker ────────────────────────────────────────────────────────────
+  celery_worker:
+    build:
+      context: .
+      target: production
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: Connect.settings.production
+    command: celery -A Connect worker --loglevel=info --concurrency=4
+    depends_on:
+      - redis
+      - web
+    # Healthcheck verifies the worker process exists inside the container
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -E 'celery.*worker' | grep -v grep >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ── Celery Beat ──────────────────────────────────────────────────────────────
+  celery_beat:
+    build:
+      context: .
+      target: production
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: Connect.settings.production
+    command: >
+      celery -A Connect beat --loglevel=info
+      --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - redis
+      - web
+    # Healthcheck ensures the beat process is present in the container
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -E 'celery.*beat' | grep -v grep >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.125'
+          memory: 128M
+
+  # ── Nginx ────────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - web
+      - daphne
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:

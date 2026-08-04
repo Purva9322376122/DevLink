@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Edit Solution — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4"><i class="bi bi-pencil me-2 text-primary"></i>Edit Solution</h5>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Language</label>
+            <select name="language" id="language-select" class="form-select" style="max-width:200px;">
+              {% for val, label in languages %}
+              <option value="{{ val }}" {% if solution.language == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Explanation</label>
+            <textarea name="explanation" id="explanation-editor" rows="5">{{ solution.explanation }}</textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Code</label>
+            <div id="monaco-container" style="height:280px;border:1px solid var(--bs-border-color);border-radius:6px;"></div>
+            <textarea name="code" id="id_code" class="d-none">{{ solution.code|default:'' }}</textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'solution_list' solution.problem_id %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+new EasyMDE({ element: document.getElementById('explanation-editor'), spellChecker: false, minHeight: '120px' });
+const LANG_MAP = { python:'python',javascript:'javascript',java:'java',cpp:'cpp',c:'c',go:'go',rust:'rust',php:'php',typescript:'typescript',sql:'sql',json:'json',yaml:'yaml' };
+require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs' } });
+require(['vs/editor/editor.main'], function() {
+  const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+  const langSelect = document.getElementById('language-select');
+  const editor = monaco.editor.create(document.getElementById('monaco-container'), {
+    value: document.getElementById('id_code').value,
+    language: LANG_MAP[langSelect.value] || 'plaintext',
+    theme: isDark ? 'vs-dark' : 'vs',
+    automaticLayout: true, minimap: { enabled: false }, fontSize: 14,
+  });
+  langSelect.addEventListener('change', () => monaco.editor.setModelLanguage(editor.getModel(), LANG_MAP[langSelect.value] || 'plaintext'));
+  document.querySelector('form').addEventListener('submit', () => { document.getElementById('id_code').value = editor.getValue(); });
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs/loader.js"></script>
+{% endblock %}

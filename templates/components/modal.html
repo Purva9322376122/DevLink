@@ -1,0 +1,15 @@
+{# Minimal modal markup for includes. Caller should provide modal_id, title and body block. #}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">{{ body|default:body|safe }}{% block modal_body %}{% endblock %}</div>
+      {% if footer %}
+      <div class="modal-footer">{{ footer }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

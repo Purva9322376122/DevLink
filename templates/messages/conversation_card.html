@@ -1,0 +1,29 @@
+{% load humanize %}
+{# Conversation card partial: expects 'convo' #}
+<a href="{% url 'chat' convo.user.username %}" class="convo-card d-flex align-items-center" data-username="{{ convo.user.username }}" role="button" tabindex="0" aria-label="Open conversation with {{ convo.user.username }}">
+  <div class="avatar-wrapper position-relative">
+    <img src="{{ convo.profile_image_url }}" alt="{{ convo.user.username }}" class="convo-avatar" width="56" height="56" onerror="this.src='https://ui-avatars.com/api/?name={{ convo.user.username }}&background=2563EB&color=ffffff&size=80'">
+    {% if convo.is_online %}
+    <span class="online-indicator bg-success" aria-hidden="true"></span>
+    {% else %}
+    <span class="online-indicator bg-secondary" aria-hidden="true"></span>
+    {% endif %}
+  </div>
+
+  <div class="flex-grow-1 overflow-hidden ms-3">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="text-truncate conversation-meta">
+        <div class="d-flex align-items-center gap-2">
+          <strong class="conversation-name">{{ convo.user.get_full_name|default:convo.user.username }}</strong>
+          {% if convo.unread_count > 0 %}
+            <span class="unread-badge ms-2" aria-label="{{ convo.unread_count }} unread messages">{{ convo.unread_count }}</span>
+          {% endif %}
+        </div>
+        <div class="text-muted small conversation-preview mt-1 text-truncate">{{ convo.last_message.content }}</div>
+      </div>
+      <div class="text-end ms-2 small text-muted conversation-time">
+        {{ convo.last_message.timestamp|naturaltime }}
+      </div>
+    </div>
+  </div>
+</a>

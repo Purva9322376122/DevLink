@@ -1,0 +1,255 @@
+/* ============================================================
+   DevLink — Authentication Pages (login.html, signup.html)
+   Centered card layout — Clerk / GitHub / Vercel style
+   ============================================================ */
+
+/* ── Reset for auth pages ──────────────────────────────────── */
+* { box-sizing: border-box; }
+
+/* ── Hide the sidebar & break the dl-grid so auth is full-width ── */
+/* These selectors target the base.html wrapper specifically for auth pages */
+.dl-page-container:has(.auth-viewport) {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.dl-grid:has(.auth-viewport) {
+  display: block !important;     /* collapse the two-column grid */
+}
+
+.dl-main-col:has(.auth-viewport) {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Hide sidebar on auth pages */
+.dl-grid:has(.auth-viewport) .dl-sidebar {
+  display: none !important;
+}
+
+/* ── Full-viewport centering wrapper ──────────────────────── */
+.auth-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 72px);   /* 72px = navbar height */
+  width: 100%;
+  padding: 40px 16px;
+  background: #F8FAFC;
+}
+
+/* ── The card ─────────────────────────────────────────────── */
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Logo ─────────────────────────────────────────────────── */
+.auth-card .dl-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.auth-card .dl-logo i  { font-size: 22px; color: #6366f1; }
+.auth-card .dl-title   { font-size: 22px; font-weight: 700; color: #6366f1; letter-spacing: 0.2px; }
+
+/* ── Headings ─────────────────────────────────────────────── */
+.auth-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  margin: 20px 0 6px;
+  line-height: 1.25;
+}
+.auth-sub {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 0 0 24px;
+}
+
+/* ── Form groups ──────────────────────────────────────────── */
+.auth-form  { display: block; }
+.form-group { margin-bottom: 16px; }
+
+.dl-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+/* ── Input with icon ──────────────────────────────────────── */
+.input-wrap { position: relative; }
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.dl-form-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 42px;
+  border-radius: 10px;
+  border: 1.5px solid #D1D5DB;
+  font-size: 15px;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.dl-form-input::placeholder { color: #9CA3AF; }
+
+.dl-form-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.dl-form-input.invalid { border-color: #DC2626; }
+.dl-form-input.valid   { border-color: #16A34A; }
+
+/* ── Password toggle ─────────────────────────────────────── */
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #9CA3AF;
+  font-size: 16px;
+  line-height: 1;
+}
+.password-toggle:hover { color: #6366f1; }
+
+/* ── Input with password toggle — extra right padding ─────── */
+.password-field { padding-right: 44px; }
+
+/* ── Validation feedback ──────────────────────────────────── */
+.input-error {
+  color: #DC2626;
+  font-size: 12.5px;
+  margin-top: 5px;
+}
+
+/* ── Remember me / Forgot password row ───────────────────── */
+.form-row         { display: flex; align-items: center; gap: 12px; }
+.form-row-between { justify-content: space-between; }
+
+.checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6B7280;
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-wrap input[type="checkbox"] { accent-color: #6366f1; width: 15px; height: 15px; }
+
+.forgot-link {
+  font-size: 14px;
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+/* ── Primary submit button ────────────────────────────────── */
+.dl-btn-primary {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  border-radius: 10px;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: background .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+.dl-btn-primary:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+}
+.dl-btn-primary:active { transform: translateY(0); }
+
+/* ── Footer link row ─────────────────────────────────────── */
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #6B7280;
+}
+.auth-footer a {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+}
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ── Flash messages ──────────────────────────────────────── */
+.messages      { margin-bottom: 16px; }
+.message       { padding: 11px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 8px; }
+.message.error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+.message.success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+.message.info  { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+
+/* ── Dark mode ───────────────────────────────────────────── */
+[data-bs-theme="dark"] .auth-viewport {
+  background: #0b1220;
+}
+[data-bs-theme="dark"] .auth-card {
+  background: #0f1724;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+[data-bs-theme="dark"] .auth-title           { color: #F9FAFB; }
+[data-bs-theme="dark"] .dl-form-label        { color: #E5E7EB; }
+[data-bs-theme="dark"] .dl-form-input {
+  background: #1a2535;
+  color: #F9FAFB;
+  border-color: #374151;
+}
+[data-bs-theme="dark"] .dl-form-input:focus  { border-color: #6366f1; }
+[data-bs-theme="dark"] .dl-form-input::placeholder { color: #6B7280; }
+[data-bs-theme="dark"] .input-icon          { color: #6B7280; }
+[data-bs-theme="dark"] .auth-footer         { color: #9CA3AF; }
+[data-bs-theme="dark"] .checkbox-wrap       { color: #9CA3AF; }
+[data-bs-theme="dark"] .auth-card .dl-title { color: #818cf8; }
+[data-bs-theme="dark"] .auth-card .dl-logo i { color: #818cf8; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .auth-card   { padding: 28px 20px; }
+  .auth-title  { font-size: 22px; }
+  .auth-viewport { padding: 24px 16px; min-height: 100dvh; }
+}
+
+@media (max-width: 360px) {
+  .auth-card  { padding: 24px 16px; }
+  .auth-title { font-size: 20px; }
+}

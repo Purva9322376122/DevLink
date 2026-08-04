@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/opportunities.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="opportunities-container">
+  <!-- Page Header -->
+  <header class="opportunities-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Opportunities</h1>
+        <p class="header-subtitle">Discover internships, freelance projects, hackathons, and developer collaborations.</p>
+      </div>
+      {% if user.is_authenticated %}
+      <a href="{% url 'create_opportunity' %}" class="dl-btn dl-btn-primary header-btn" aria-label="Post an opportunity">
+        <i class="bi bi-plus-lg"></i> Post Opportunity
+      </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Search & Filter Bar -->
+  <div class="search-bar-wrapper">
+    <form method="get" class="search-filters" role="search" aria-label="Search and filter opportunities">
+      <div class="search-input-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input 
+          type="search" 
+          name="q" 
+          value="" 
+          placeholder="Search opportunities, skills, companies..." 
+          aria-label="Search opportunities"
+          class="search-input-field"
+        >
+      </div>
+
+      <div class="filters-group">
+        <select name="type" class="filter-select" aria-label="Filter by opportunity type">
+          <option value="">All Types</option>
+          <option value="internship">Internship</option>
+          <option value="job">Job</option>
+          <option value="freelance">Freelance</option>
+          <option value="hackathon">Hackathon</option>
+          <option value="open-source">Open Source</option>
+        </select>
+
+        <select name="sort" class="filter-select" aria-label="Sort by">
+          <option value="newest">Newest</option>
+          <option value="trending">Trending</option>
+        </select>
+
+        <button type="submit" class="filter-button" aria-label="Apply filters">
+          <i class="bi bi-funnel"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Opportunities List Section -->
+  <section class="opportunities-list" aria-live="polite" aria-label="List of opportunities">
+    {% if opportunities %}
+      {% for opportunity in opportunities %}
+      <article class="opportunity-card" data-aos="fade-up">
+        <!-- Card Header with Type Badge -->
+        <div class="card-header">
+          <div class="card-title-wrapper">
+            <h2 class="card-title">
+              <a href="{% url 'opportunity_detail' opportunity.id %}" class="card-title-link">
+                {{ opportunity.title }}
+              </a>
+            </h2>
+          </div>
+          <div class="card-badges">
+            <span class="opportunity-type-badge type-badge-default" aria-label="Opportunity type">
+              <i class="bi bi-briefcase"></i> Opportunity
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Body: Description -->
+        <div class="card-body">
+          <p class="card-description">
+            {{ opportunity.description|truncatewords:25|truncatechars:150 }}
+          </p>
+
+          <!-- Skills/Tags -->
+          {% if opportunity.required_skills %}
+          <div class="card-skills">
+            <span class="skill-badge">{{ opportunity.required_skills }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-footer">
+          <div class="footer-left">
+            <div class="posted-info">
+              {% if opportunity.user %}
+              <span class="posted-by">
+                <i class="bi bi-person"></i>
+                <a href="{% url 'accounts:profile' opportunity.user.username %}" class="posted-by-link">
+                  {{ opportunity.user.get_full_name|default:opportunity.user.username }}
+                </a>
+              </span>
+              {% endif %}
+              <span class="posted-date" title="{% if opportunity.created_at %}{{ opportunity.created_at }}{% endif %}">
+                <i class="bi bi-calendar3"></i>
+                {% if opportunity.created_at %}
+                  {{ opportunity.created_at|date:"M d, Y" }}
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+          <div class="footer-right">
+            <a href="{% url 'opportunity_detail' opportunity.id %}" class="view-button" aria-label="View opportunity details">
+              View Details <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-content">
+          <i class="bi bi-briefcase empty-state-icon"></i>
+          <h3 class="empty-state-title">No opportunities yet</h3>
+          <p class="empty-state-description">
+            No opportunities are currently available. Be the first to post an opportunity for the community!
+          </p>
+          {% if user.is_authenticated %}
+            <a href="{% url 'create_opportunity' %}" class="dl-btn dl-btn-primary empty-state-button">
+              <i class="bi bi-plus-lg"></i> Post the First Opportunity
+            </a>
+          {% else %}
+            <p class="empty-state-hint">Sign in to post an opportunity or explore other sections.</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

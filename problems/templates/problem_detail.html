@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ problem.title }} — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/problem_detail.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" id="prism-theme">
+{% endblock %}
+
+{% block content %}
+<main class="problem-detail-container">
+  <!-- Breadcrumb Navigation -->
+  <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'problem_list' %}" class="breadcrumb-link">Problems</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        <span class="breadcrumb-text">{{ problem.title|truncatewords:5 }}</span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Main Content Grid -->
+  <div class="detail-grid">
+    <!-- Main Content Column -->
+    <div class="main-content">
+      <!-- Problem Header Section -->
+      <header class="problem-header">
+        <div class="header-top">
+          <h1 class="problem-title">{{ problem.title }}</h1>
+          <div class="header-actions">
+            {% if user.is_authenticated and user == problem.user or user.is_staff or user.is_superuser %}
+            <div class="action-buttons">
+              <a href="{% url 'edit_problem' problem.id %}" class="action-btn" aria-label="Edit problem" title="Edit">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'problem_history' problem.id %}" class="action-btn" aria-label="View history" title="History">
+                <i class="bi bi-clock-history"></i>
+              </a>
+              <form method="post" action="{% url 'delete_problem' problem.id %}" class="action-form">
+                {% csrf_token %}
+                <button class="action-btn action-btn-danger" type="submit" aria-label="Delete problem" title="Delete" onclick="return confirm('Delete this problem?')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Problem Meta Information -->
+        <div class="header-meta">
+          <div class="meta-left">
+            <!-- Author Section -->
+            <div class="author-card">
+              <div class="author-avatar">
+                {% if problem.user.profile.profile_image %}
+                  <img src="{{ problem.user.profile.profile_image.url }}" alt="{{ problem.user.username }}" class="avatar-image">
+                {% else %}
+                  <img src="https://ui-avatars.com/api/?name={{ problem.user.username }}&background=E5E7EB&color=111827" alt="{{ problem.user.username }}" class="avatar-image">
+                {% endif %}
+              </div>
+              <div class="author-info">
+                <div class="author-name">
+                  <a href="{% url 'accounts:profile' problem.user.username %}" class="author-link">
+                    {{ problem.user.username }}
+                  </a>
+                </div>
+                <div class="author-meta">
+                  <span class="posted-date" title="{{ problem.created_at }}">
+                    <i class="bi bi-calendar3"></i> {{ problem.created_at|date:"M d, Y" }}
+                  </span>
+                  {% if problem.language %}
+                  <span class="language-label" aria-label="Language">
+                    <i class="bi bi-code-slash"></i> {{ problem.language }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="meta-right">
+            <!-- Status Badge -->
+            {% if problem.difficulty %}
+              {% if problem.difficulty == 'easy' %}
+                <span class="difficulty-badge difficulty-easy" aria-label="Difficulty: Easy">
+                  <i class="bi bi-circle-fill"></i> Easy
+                </span>
+              {% elif problem.difficulty == 'medium' %}
+                <span class="difficulty-badge difficulty-medium" aria-label="Difficulty: Medium">
+                  <i class="bi bi-circle-fill"></i> Medium
+                </span>
+              {% elif problem.difficulty == 'hard' %}
+                <span class="difficulty-badge difficulty-hard" aria-label="Difficulty: Hard">
+                  <i class="bi bi-circle-fill"></i> Hard
+                </span>
+              {% endif %}
+            {% endif %}
+
+            <!-- View Count -->
+            <div class="view-count" aria-label="Total views">
+              <i class="bi bi-eye"></i>
+              <span>{{ problem.view_count }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        {% if problem.tags.all %}
+        <div class="tags-container">
+          <div class="tags-list">
+            {% for tag in problem.tags.all %}
+            <a href="{% url 'problem_list' %}?tag={{ tag.name }}" class="tag-item" aria-label="Filter by tag: {{ tag.name }}">
+              <span class="tag-name">{{ tag.name }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </header>
+
+      <!-- Problem Description Card -->
+      <section class="description-section">
+        <article class="description-card">
+          <div class="description-content markdown-body">
+            {{ rendered_description|safe }}
+          </div>
+        </article>
+      </section>
+
+      <!-- Action Buttons -->
+      <div class="action-bar">
+        <a href="{% url 'solution_create' problem.id %}" class="dl-btn dl-btn-primary action-primary">
+          <i class="bi bi-lightning-charge"></i> Submit Solution
+        </a>
+        <a href="{% url 'solution_list' problem.id %}" class="dl-btn dl-btn-outline action-secondary">
+          <i class="bi bi-chat-left-text"></i> View Solutions ({{ problem.solutions.count }})
+        </a>
+        {% if user.is_authenticated %}
+        <button class="dl-btn dl-btn-outline action-secondary" data-action="report" aria-label="Report this problem">
+          <i class="bi bi-flag"></i> Report
+        </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar Column -->
+    <aside class="sidebar">
+      <!-- Problem Information Card -->
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title">Problem Details</h3>
+        <div class="sidebar-card-content">
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="info-value">
+              {% if problem.difficulty == 'easy' %}
+                <span class="badge-small badge-easy">Open</span>
+              {% else %}
+                <span class="badge-small badge-default">Open</span>
+              {% endif %}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Solutions</span>
+            <span class="info-value">
+              <strong>{{ problem.solutions.count }}</strong>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Views</span>
+            <span class="info-value">
+              <strong>{{ problem.view_count }}</strong>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Created</span>
+            <span class="info-value small">{{ problem.created_at|date:"M d, Y" }}</span>
+          </div>
+          {% if problem.updated_at != problem.created_at %}
+          <div class="info-row">
+            <span class="info-label">Updated</span>
+            <span class="info-value small">{{ problem.updated_at|date:"M d, Y" }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Related Problems Card -->
+      {% if related_problems %}
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title">Related Problems</h3>
+        <div class="sidebar-card-content related-problems-list">
+          {% for rp in related_problems|slice:":5" %}
+          <a href="{% url 'problem_detail' rp.id %}" class="related-problem-item">
+            <div class="related-problem-title">{{ rp.title|truncatewords:8 }}</div>
+            <div class="related-problem-meta">
+              {% if rp.difficulty == 'easy' %}
+                <span class="badge-tiny badge-easy">Easy</span>
+              {% elif rp.difficulty == 'medium' %}
+                <span class="badge-tiny badge-medium">Medium</span>
+              {% elif rp.difficulty == 'hard' %}
+                <span class="badge-tiny badge-hard">Hard</span>
+              {% endif %}
+              <span class="badge-tiny badge-solutions">{{ rp.solutions.count }}</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Share Section -->
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title">Share</h3>
+        <div class="sidebar-card-content share-section">
+          <button class="share-button" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!')">
+            <i class="bi bi-link-45deg"></i> Copy Link
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Report Modal -->
+{% if user.is_authenticated %}
+<div class="modal-overlay" id="reportModal" hidden>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Report Problem</h2>
+      <button class="modal-close" aria-label="Close" onclick="this.closest('.modal-overlay').hidden = true">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="reportForm">
+        {% csrf_token %}
+        <input type="hidden" name="content_type" value="problem">
+        <input type="hidden" name="object_id" value="{{ problem.id }}">
+        
+        <div class="form-group">
+          <label class="form-label" for="report-reason">Reason</label>
+          <select id="report-reason" name="reason" class="form-control">
+            <option value="spam">Spam</option>
+            <option value="offensive">Offensive Content</option>
+            <option value="duplicate">Duplicate</option>
+            <option value="incorrect">Incorrect Information</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="report-description">Additional Details (optional)</label>
+          <textarea id="report-description" name="description" class="form-control" rows="4" placeholder="Provide any additional information..."></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="dl-btn dl-btn-outline" onclick="this.closest('.modal-overlay').hidden = true">
+            Cancel
+          </button>
+          <button type="submit" class="dl-btn dl-btn-primary">
+            Submit Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Prism syntax highlighting
+  Prism.highlightAll();
+
+  // Theme-aware Prism
+  const updatePrismTheme = () => {
+    const dark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    document.getElementById('prism-theme').href = dark
+      ? 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css'
+      : 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css';
+  };
+  updatePrismTheme();
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) toggle.addEventListener('click', updatePrismTheme);
+
+  // Report button handler
+  const reportBtn = document.querySelector('[data-action="report"]');
+  const reportModal = document.getElementById('reportModal');
+  if (reportBtn && reportModal) {
+    reportBtn.addEventListener('click', () => {
+      reportModal.hidden = false;
+    });
+  }
+
+  // Report form handler
+  const reportForm = document.getElementById('reportForm');
+  if (reportForm) {
+    reportForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const data = new FormData(reportForm);
+      try {
+        const resp = await fetch('{% url "report_content" %}', { 
+          method: 'POST', 
+          body: data 
+        });
+        const json = await resp.json();
+        if (json.status === 'ok') {
+          reportModal.hidden = true;
+          if (typeof showToast !== 'undefined') {
+            showToast('Report submitted. Thank you.', 'success');
+          } else {
+            alert('Report submitted. Thank you.');
+          }
+        }
+      } catch (err) {
+        console.error('Error submitting report:', err);
+      }
+    });
+  }
+
+  // Copy link button (already in HTML)
+});
+</script>
+{% endblock %}

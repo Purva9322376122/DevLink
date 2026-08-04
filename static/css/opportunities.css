@@ -1,0 +1,794 @@
+/* ============================================
+   Opportunities List Page - Modern Design System
+   ============================================ */
+
+/* Container & Layout */
+.opportunities-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 20px;
+}
+
+/* ============================================
+   Page Header
+   ============================================ */
+
+.opportunities-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 16px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.header-btn {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 12px;
+  transition: all var(--transition) ease;
+}
+
+.header-btn:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   Search & Filter Bar
+   ============================================ */
+
+.search-bar-wrapper {
+  margin-bottom: 32px;
+}
+
+.search-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: var(--card);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all var(--transition) ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--muted);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.search-input-field {
+  width: 100%;
+  height: 44px;
+  border: none;
+  background: transparent;
+  padding: 0 44px 0 40px;
+  font-size: 15px;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.search-input-field::placeholder {
+  color: var(--muted);
+}
+
+.search-input-field:focus {
+  outline: none;
+}
+
+.filters-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  height: 44px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition) ease;
+  font-family: inherit;
+}
+
+.filter-select:hover {
+  border-color: var(--color-primary);
+  background: var(--card);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filter-button {
+  height: 44px;
+  width: 44px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.filter-button:hover {
+  border-color: var(--color-primary);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.filter-button:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ============================================
+   Opportunities List
+   ============================================ */
+
+.opportunities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ============================================
+   Opportunity Card
+   ============================================ */
+
+.opportunity-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all var(--transition) ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.opportunity-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(37, 99, 235, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Card Header Section */
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.card-title-link {
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--transition) ease;
+}
+
+.card-title-link:hover {
+  color: var(--color-primary);
+}
+
+.card-title-link:focus {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary);
+  text-underline-offset: 4px;
+}
+
+.card-badges {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.opportunity-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.type-badge-default {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary);
+}
+
+.type-badge-internship {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.type-badge-job {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.type-badge-freelance {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
+
+.type-badge-hackathon {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.type-badge-opensource {
+  background: rgba(236, 72, 153, 0.1);
+  color: #ec4899;
+}
+
+/* Card Body Section */
+.card-body {
+  padding: 16px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-description {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Skills/Tags */
+.card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.skill-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: #F3F4F6;
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all var(--transition) ease;
+  border: 1px solid transparent;
+}
+
+.skill-badge:hover {
+  background: #E5E7EB;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Card Footer Section */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: rgba(243, 244, 246, 0.3);
+  flex-wrap: wrap;
+}
+
+.footer-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.posted-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.posted-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.posted-by-link {
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--transition) ease;
+}
+
+.posted-by-link:hover {
+  color: var(--color-primary);
+}
+
+.posted-by-link:focus {
+  outline: none;
+  text-decoration: underline;
+}
+
+.posted-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.view-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all var(--transition) ease;
+  white-space: nowrap;
+}
+
+.view-button:hover {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1f58c1;
+}
+
+.view-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.pagination {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-item {
+  display: flex;
+}
+
+.page-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all var(--transition) ease;
+  cursor: pointer;
+}
+
+.page-item.active .page-link {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.page-item:not(.disabled):not(.active) .page-link:hover {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.page-item.disabled .page-link {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.page-link:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px 20px;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  margin-top: 20px;
+}
+
+.empty-state-content {
+  text-align: center;
+  max-width: 480px;
+}
+
+.empty-state-icon {
+  font-size: 56px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  display: block;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.empty-state-description {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.empty-state-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+.empty-state-hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+@media (max-width: 768px) {
+  .opportunities-container {
+    padding: 32px 16px;
+  }
+
+  .opportunities-header {
+    margin-bottom: 32px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-btn {
+    align-self: flex-start;
+  }
+
+  .search-filters {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-input-wrapper {
+    min-width: auto;
+  }
+
+  .filters-group {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-badges {
+    align-self: flex-start;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .footer-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .empty-state {
+    min-height: 300px;
+    padding: 32px 16px;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .opportunities-container {
+    padding: 24px 12px;
+  }
+
+  .header-title {
+    font-size: 28px;
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+  }
+
+  .search-filters {
+    padding: 12px;
+  }
+
+  .search-input-field {
+    font-size: 14px;
+    height: 40px;
+  }
+
+  .filter-select,
+  .filter-button {
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .card-title {
+    font-size: 18px;
+  }
+
+  .card-description {
+    font-size: 14px;
+  }
+
+  .card-skills {
+    gap: 6px;
+  }
+
+  .skill-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .card-footer {
+    padding: 12px 16px;
+  }
+
+  .posted-info {
+    font-size: 12px;
+  }
+
+  .view-button {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .page-link {
+    min-width: 40px;
+    height: 40px;
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .empty-state {
+    min-height: 250px;
+    padding: 24px 12px;
+  }
+
+  .empty-state-title {
+    font-size: 20px;
+  }
+
+  .empty-state-description {
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   Accessibility & Animations
+   ============================================ */
+
+/* Keyboard focus visible styles */
+.opportunity-card:focus-within {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Smooth animations for fade-in */
+[data-aos="fade-up"] {
+  animation: fadeUp 0.5s ease forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] {
+  --card: #0f1724;
+  --bg: #0b1220;
+  --text: #ffffff;
+  --muted: #9ca3af;
+  --border: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .card-footer {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .skill-badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .skill-badge:hover {
+  background: rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .type-badge-internship {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+[data-theme="dark"] .type-badge-job {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .type-badge-freelance {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+}
+
+[data-theme="dark"] .type-badge-hackathon {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .type-badge-opensource {
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+}

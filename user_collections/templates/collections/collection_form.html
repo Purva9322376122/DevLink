@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Collection{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <h2 class="mb-4">{{ action }} Collection</h2>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_name" class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+          <input type="text" id="id_name" name="name" class="form-control" required maxlength="100"
+                 value="{{ collection.name|default_if_none:'' }}" placeholder="e.g. Favourite Problems">
+        </div>
+
+        <div class="mb-3">
+          <label for="id_description" class="form-label fw-semibold">Description</label>
+          <textarea id="id_description" name="description" class="form-control" rows="3"
+                    placeholder="A short description of this collection...">{{ collection.description|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="mb-4">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="id_is_public" name="is_public"
+                   {% if collection.is_public or not collection %}checked{% endif %}>
+            <label class="form-check-label" for="id_is_public">Make this collection public</label>
+          </div>
+          <div class="form-text text-muted">Public collections are visible to all users.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">{{ action }} Collection</button>
+          {% if collection %}
+            <a href="{% url 'collections:detail' collection.pk %}" class="btn btn-outline-secondary">Cancel</a>
+          {% else %}
+            <a href="{% url 'collections:list' %}" class="btn btn-outline-secondary">Cancel</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% load static %}
+<div class="invitation-card">
+
+  <!-- Avatar -->
+  <div class="invitation-avatar">
+    {% with name=invite.other_user.get_full_name|default:invite.other_user.username %}
+    {% with initials=invite.other_user.username|slice:":2"|upper %}
+    <div class="avatar-initials" style="background:#2563EB;">{{ initials }}</div>
+    {% endwith %}
+    {% endwith %}
+  </div>
+
+  <!-- Body -->
+  <div class="invitation-body">
+    <div class="invitation-top-row">
+      <span class="invitation-name">{{ invite.other_user.get_full_name|default:invite.other_user.username }}</span>
+      <div class="invitation-meta-right">
+        <span class="invitation-time">{{ invite.created_at|timesince }} ago</span>
+        {% if invite.status == 'accepted' %}
+          <span class="status-badge badge-accepted">Accepted</span>
+        {% elif invite.status == 'rejected' %}
+          <span class="status-badge badge-rejected">Declined</span>
+        {% else %}
+          <span class="status-badge badge-pending">Pending</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if invite.message %}
+      <p class="invitation-message">{{ invite.message }}</p>
+    {% endif %}
+
+    <div class="invitation-actions">
+      <a href="{% url 'accounts:profile' invite.other_user.username %}" class="view-profile-link">View Profile</a>
+
+      {% if invite.is_incoming and invite.status == 'pending' %}
+        <form method="POST" action="{% url 'accept_invitation' invite.id %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn-action btn-accept">Accept</button>
+        </form>
+        <form method="POST" action="{% url 'reject_invitation' invite.id %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn-action btn-reject">Decline</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+</div>

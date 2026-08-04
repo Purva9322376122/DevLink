@@ -1,0 +1,33 @@
+{% load humanize %}
+{# Chat header partial: expects 'peer' object with avatar, name, is_online, last_seen #}
+<header class="chat-header d-flex align-items-center justify-content-between p-3 border-bottom">
+  <div class="d-flex align-items-center gap-3">
+    <img src="{{ peer.profile_image_url|default:'https://ui-avatars.com/api/?name='|add:peer.username|add:'&background=6366f1&color=ffffff&size=64' }}" alt="{{ peer.username }}" class="rounded-circle" width="48" height="48" onerror="this.src='https://ui-avatars.com/api/?name={{ peer.username }}&background=6366f1&color=ffffff&size=64'">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <strong class="peer-name">{{ peer.get_full_name|default:peer.username }}</strong>
+        {% if peer.is_online %}
+        <span class="text-success small">● Online</span>
+        {% else %}
+        <span class="text-muted small">Last seen {{ peer.last_seen|naturaltime }}</span>
+        {% endif %}
+      </div>
+      <div class="text-muted small">{{ peer.title|default:'' }}</div>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-outline-secondary btn-sm" aria-label="Start audio call"><i class="bi bi-telephone"></i></button>
+    <button class="btn btn-outline-secondary btn-sm" aria-label="Start video call"><i class="bi bi-camera-video"></i></button>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm" id="chatMore" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More">
+        <i class="bi bi-three-dots"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="chatMore">
+        <li><a class="dropdown-item" href="{% url 'accounts:profile' peer.username %}">View profile</a></li>
+        <li><a class="dropdown-item" href="#">Mute</a></li>
+        <li><a class="dropdown-item" href="#">Clear chat</a></li>
+      </ul>
+    </div>
+  </div>
+</header>

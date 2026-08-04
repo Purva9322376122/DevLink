@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ collection.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="mb-1">
+        {{ collection.name }}
+        {% if collection.is_public %}
+          <span class="badge bg-success fs-6 align-middle">Public</span>
+        {% else %}
+          <span class="badge bg-secondary fs-6 align-middle">Private</span>
+        {% endif %}
+      </h2>
+      <p class="text-muted mb-1">
+        <i class="bi bi-person"></i> {{ collection.owner.username }} &middot;
+        <i class="bi bi-collection"></i> {{ resolved_items|length }} item{{ resolved_items|length|pluralize }}
+      </p>
+      {% if collection.description %}
+        <p class="mb-0">{{ collection.description }}</p>
+      {% endif %}
+    </div>
+    {% if request.user == collection.owner %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'collections:edit' collection.pk %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-pencil"></i> Edit
+        </a>
+        <form method="post" action="{% url 'collections:delete' collection.pk %}"
+              onsubmit="return confirm('Delete this collection?')">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+
+  <hr>
+
+  <!-- Items -->
+  {% if resolved_items %}
+    <div class="list-group">
+      {% for entry in resolved_items %}
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge {% if entry.item.item_type == 'problem' %}bg-primary{% else %}bg-info text-dark{% endif %} me-2">
+              {{ entry.item.item_type|capfirst }}
+            </span>
+            {% if entry.item.item_type == 'problem' %}
+              <a href="{% url 'problem_detail' entry.obj.pk %}" class="text-decoration-none fw-semibold">
+                {{ entry.obj.title }}
+              </a>
+            {% else %}
+              <a href="{% url 'solution_list' entry.obj.problem_id %}" class="text-decoration-none fw-semibold">
+                Solution for: {{ entry.obj.problem.title }}
+              </a>
+            {% endif %}
+            {% if entry.item.note %}
+              <small class="text-muted ms-2">&mdash; {{ entry.item.note }}</small>
+            {% endif %}
+          </div>
+          {% if request.user == collection.owner %}
+            <form method="post" action="{% url 'collections:remove_item' entry.item.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger"
+                      aria-label="Remove item" onclick="return confirm('Remove this item?')">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-inbox fs-1"></i>
+      <p class="mt-2">This collection is empty.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+{# Small badge component: { % include 'components/badge.html' with text='New' type='info' % }
+   types: info, success, danger, muted
+#}
+<span class="dl-badge dl-badge-{{ type|default:'info' }} {{ extra_class|default:'' }}">{{ text }}</span>

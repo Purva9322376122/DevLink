@@ -1,0 +1,10 @@
+{# Render a list of tags/skills with consistent styling
+   Usage: {% include 'components/tags.html' with tags=skills_list %}
+#}
+{% if tags %}
+<div class="dl-tags">
+  {% for tag in tags %}
+    <span class="dl-tag">{{ tag }}</span>
+  {% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,322 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Submit Solution" }} — {{ problem.title }} — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<link rel="stylesheet" href="{% static 'css/problem_create.css' %}">
+<style>
+/* Page container overrides for Submit Solution / Edit Solution */
+.submit-wrapper { background: #F8FAFC; padding: 36px 0; }
+.submit-container { max-width: {{ container_max_width|default:1200 }}px; margin: 0 auto; padding: 0 24px; }
+/* Card: rounded-2xl, subtle shadow, comfortable padding */
+.submit-card { background: #fff; border-radius: 20px; padding: 32px; box-shadow: 0 8px 24px rgba(16,24,40,0.06); border: 1px solid rgba(15,23,42,0.06); }
+
+/* Header */
+.submit-breadcrumb { display:flex; gap:8px; align-items:center; margin-bottom:20px; color: #6B7280; }
+.submit-breadcrumb a { color: #6B7280; text-decoration: none; }
+.submit-badge-row { display:flex; gap:12px; align-items:center; margin-bottom:8px; }
+
+/* Two-column layout */
+.form-grid { display:flex; gap:24px; align-items:flex-start; }
+.form-main { flex: 0 0 70%; min-width: 0; }
+.form-side { flex: 1 1 30%; min-width: 0; position:sticky; top:{{ side_sticky_top|default:100 }}px; align-self:flex-start; }
+
+/* Field spacing */
+.field-section { margin-bottom:32px; }
+.field-label { font-weight:700; display:block; margin-bottom:12px; color: #0f172a; }
+
+/* Editors */
+/* Ensure explanation editor doesn't add large bottom spacing */
+.easy-mde-container, .easy-mde-container .editor-toolbar, .easy-mde-container .editor-preview { margin-bottom:0 !important; padding-bottom:0 !important; }
+/* Ensure code editor wrapper starts close to the label */
+.field-section > .monaco-wrap { margin-top:12px !important; }
+.field-section .field-help { margin-top:8px !important; }
+
+#explanation-editor { min-height:{{ explanation_minheight|default:220 }}px; }
+.easy-mde-container { width:100%; }
+.easy-mde-container .CodeMirror { min-height:{{ explanation_minheight|default:220 }}px; border-radius:10px; }
+.monaco-wrap { width:100%; margin-top:12px; }
+#monaco-container { height:{{ code_minheight|default:350 }}px; border-radius:12px; border:1px solid rgba(15,23,42,0.06); overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace; box-sizing:border-box; }
+/* Style fallback textarea to match Monaco area */
+#id_code { width:100%; height:{{ code_minheight|default:350 }}px; border-radius:12px; box-sizing:border-box; padding:12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace; font-size:14px; display:none; white-space: pre; overflow-x: auto; }
+.copy-code-btn { padding:6px 10px; border-radius:8px; }
+
+/* Monaco wrapper and improved alignment */
+.monaco-wrap { position: static; width: 100%; max-width:100%; overflow-x:auto; min-width:0; margin-top:12px; display:block; }
+.monaco-wrap .copy-code-btn { position: static; display:inline-flex; margin-bottom:8px; z-index:20; }
+#monaco-container { width: 100% !important; max-width:100% !important; height: {{ code_minheight|default:350 }}px; border-radius:12px; border:1px solid rgba(15,23,42,0.06); overflow:auto; white-space: pre; box-sizing:border-box; display:block; }
+/* Ensure Monaco internal elements don't force overflow outside the parent */
+.monaco-wrap .monaco-editor, .monaco-wrap .monaco-editor .monaco-scrollable-element { width:100% !important; max-width:100% !important; min-width:0 !important; box-sizing:border-box !important; }
+.monaco-wrap .monaco-editor .overflow-guard { min-width:0 !important; }
+.submit-card { overflow: visible; }
+
+.field-textarea.d-none { display:none !important; }
+
+/* Sidebar cards */
+.side-card { background:#fff; border-radius:12px; padding:16px; border:1px solid rgba(15,23,42,0.04); box-shadow:0 6px 18px rgba(16,24,40,0.03); margin-bottom:16px; }
+.side-card h5 { margin:0 0 8px 0; font-size:15px; }
+.side-card ul { margin:0; padding-left:18px; color:#374151; line-height:1.6; }
+
+/* Actions */
+.form-actions { display:flex; justify-content:flex-end; gap:12px; margin-top:16px; }
+
+@media (max-width: 992px) {
+  .form-grid { flex-direction:column; }
+  .form-side { position:static; top:auto; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="submit-wrapper">
+  <div class="submit-container">
+    <div class="submit-card">
+
+      <!-- Breadcrumb (dynamic) -->
+      <nav class="submit-breadcrumb" aria-label="breadcrumb">
+        {% if breadcrumbs %}
+          {% for crumb in breadcrumbs %}
+            {% if crumb.url %}
+              <a href="{{ crumb.url }}">{{ crumb.label }}</a>
+            {% else %}
+              <span class="text-muted">{{ crumb.label }}</span>
+            {% endif %}
+            {% if not forloop.last %}<span>&gt;</span>{% endif %}
+          {% endfor %}
+        {% else %}
+          <a href="{% url 'problem_list' %}">{{ breadcrumb_problems_label|default:'Problems' }}</a>
+          <span>&gt;</span>
+          <a href="{% url 'problem_detail' problem.id %}">{{ problem.title }}</a>
+          <span>&gt;</span>
+          <span class="text-primary fw-semibold">{{ breadcrumb_submit_label|default:'Submit Solution' }}</span>
+        {% endif %}
+      </nav>
+
+      <!-- Header: badge + title + back (dynamic labels) -->
+      <div class="submit-badge-row">
+        {% if problem.difficulty == 'easy' %}
+          <span style="background:#ecfdf5;color:#065f46;padding:6px 12px;border-radius:999px;border:1px solid #bbf7d0;font-weight:600;">{{ problem.difficulty|capfirst }}</span>
+        {% elif problem.difficulty == 'medium' %}
+          <span style="background:#fff7ed;color:#92400e;padding:6px 12px;border-radius:999px;border:1px solid #fbd38d;font-weight:600;">{{ problem.difficulty|capfirst }}</span>
+        {% else %}
+          <span style="background:#fff1f2;color:#991b1b;padding:6px 12px;border-radius:999px;border:1px solid #fca5a5;font-weight:600;">{{ problem.difficulty|capfirst }}</span>
+        {% endif %}
+        <div class="text-muted">{{ problem_id_label|default:'Problem #' }}{{ problem.id }}</div>
+      </div>
+
+      <h1 style="font-size:22px;margin:0 0 6px 0;color:#0f172a;font-weight:700;">{{ page_title|default:'Submit Solution' }}</h1>
+      {% if page_title == 'Edit Solution' %}
+        <div style="margin:0 0 16px 0; color:#6B7280;">Update your explanation and code before saving changes.</div>
+      {% else %}
+        <div style="margin:0 0 16px 0; color:#6B7280;">{{ problem.title }}</div>
+      {% endif %}
+      <div style="margin-bottom:24px;"><a href="{% url 'problem_detail' problem.id %}" class="btn btn-outline" style="padding:6px 10px;border-radius:8px;font-size:14px;">{{ back_button_label|default:'Back to Problem' }}</a></div>
+
+      <!-- Form start -->
+      <form method="post" action="" id="solution-form">
+        {% csrf_token %}
+
+        <div class="form-grid">
+          <!-- Left main -->
+          <div class="form-main">
+
+            <!-- Programming Language -->
+            <div class="field-section">
+              <label class="field-label" for="language-select">{{ programming_language_label|default:'Programming Language' }}</label>
+              <select name="language" id="language-select" class="field-select" style="max-width:420px; width:100%;">
+                {% for val, label in languages %}
+                  <option value="{{ val }}" {% if selected_language and selected_language == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Explanation -->
+            <div class="field-section">
+              <label class="field-label" for="explanation-editor">{{ explanation_label|default:'Explanation' }} <span class="required">*</span></label>
+              <textarea name="explanation" id="explanation-editor" class="field-textarea" placeholder="{{ explanation_placeholder|default:'Explain the approach, complexity analysis, and key steps.' }}">{{ initial_explanation|default:'' }}</textarea>
+              <div class="field-help muted" style="margin-top:8px;">{{ explanation_helper|default:'Markdown supported. Use code blocks for examples and sample I/O.' }}</div>
+            </div>
+
+            <!-- Code Editor -->
+            <div class="field-section">
+              <label class="field-label" for="monaco-container" style="margin:0 0 8px 0;">{{ code_label|default:'Solution Code' }} <span class="required">*</span></label>
+
+              <div class="monaco-wrap">
+                <button type="button" id="copy-code-btn" class="btn btn-outline copy-code-btn">{{ copy_code_label|default:'Copy' }}</button>
+                <div id="monaco-container" aria-label="Code editor"></div>
+
+                <!-- Fallback textarea placed inside the same wrapper so it occupies the same area as Monaco when shown -->
+                <textarea name="code" id="id_code" class="field-textarea d-none" rows="10" placeholder="{{ code_placeholder|default:'// Write your solution code here...' }}">{{ initial_code|default:'' }}</textarea>
+              </div>
+              <div class="field-help muted" style="margin-top:8px;">{{ code_helper|default:'Include working code. Ensure it handles edge cases and is readable.' }}</div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <a href="{% url 'problem_detail' problem.id %}" class="btn btn-outline">{{ cancel_label|default:'Cancel' }}</a>
+              <button type="submit" class="btn btn-primary">{% if page_title == 'Edit Solution' %}{{ submit_label|default:'Save Changes' }}{% else %}{{ submit_label|default:'Submit Solution' }}{% endif %}</button>
+            </div>
+
+          </div>
+
+          <!-- Right sidebar -->
+          <div class="form-side">
+            <div class="side-card">
+              <h5>{{ tips_title|default:'Editing Tips' }}</h5>
+              <ul>
+                {% if tips_list %}
+                  {% for tip in tips_list %}<li>{{ tip }}</li>{% endfor %}
+                {% else %}
+                  <li>Keep explanations clear.</li>
+                  <li>Update complexity if changed.</li>
+                  <li>Keep formatting consistent.</li>
+                  <li>Test your solution before saving.</li>
+                {% endif %}
+              </ul>
+            </div>
+
+            <div class="side-card">
+              <h5>Markdown Reference</h5>
+              <ul>
+                <li><strong>Bold</strong>: **bold**</li>
+                <li><em>Italic</em>: *italic*</li>
+                <li>Code block: ```
+code
+```</li>
+                <li>Lists: - item</li>
+                <li>Links: [text](url)</li>
+                <li>Headings: # H1, ## H2</li>
+              </ul>
+            </div>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs/loader.js"></script>
+<script>
+// EasyMDE
+const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+const easyMDE = new EasyMDE({
+  element: document.getElementById('explanation-editor'),
+  spellChecker: false,
+  autosave: { enabled: true, uniqueId: 'solution-create', delay: 3000 },
+  toolbar: ['bold','italic','heading','|','quote','code','unordered-list','ordered-list','|','link','image','table','horizontal-rule','|','preview','side-by-side','fullscreen','|','guide'],
+  minHeight: '{{ explanation_minheight|default:220 }}px',
+  theme: isDark ? 'dark' : 'light',
+});
+
+// Character counter
+let el = document.getElementById('explain-char-count');
+function updateCharCount(){
+  const val = easyMDE.value() || '';
+  if(!el){ el = document.createElement('small'); el.id='explain-char-count'; el.className='text-muted'; document.querySelector('#explanation-editor').parentNode.appendChild(el); }
+  el.textContent = val.length + ' characters';
+}
+easyMDE.codemirror.on('change', updateCharCount);
+updateCharCount();
+
+// Monaco Editor
+const fallbackTextarea = document.getElementById('id_code');
+const monacoContainer = document.getElementById('monaco-container');
+const LANG_MAP = { python:'python', javascript:'javascript', java:'java', cpp:'cpp', c:'c', go:'go', rust:'rust', php:'php', typescript:'typescript', sql:'sql', json:'json', yaml:'yaml' };
+
+if(typeof require !== 'undefined'){
+  require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs' } });
+  require(['vs/editor/editor.main'], function(){
+    var isDarkTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark' || document.documentElement.getAttribute('data-theme') === 'dark';
+    var langSelect = document.getElementById('language-select');
+
+    // Create Monaco editor with horizontal scrollbar enabled (no clipping)
+    var editor = monaco.editor.create(monacoContainer, {
+      value: fallbackTextarea.value || '{{ initial_code|escapejs|default:'' }}',
+      language: LANG_MAP[langSelect.value] || 'plaintext',
+      theme: isDarkTheme ? 'vs-dark' : 'vs',
+      automaticLayout: true,
+      minimap: { enabled: false },
+      fontSize: 14,
+      scrollBeyondLastLine: false,
+      lineNumbers: 'on',
+      padding: { top: 12, bottom: 12 },
+      wordWrap: 'off', // horizontal scrolling: keep long lines on one line and show horizontal scrollbar
+      scrollbar: { horizontal: 'auto', vertical: 'auto', useShadows: false, horizontalScrollbarSize: 10, verticalScrollbarSize: 14 },
+      overviewRulerLanes: 0
+    });
+
+    // Ensure container sizing and responsiveness
+    monacoContainer.style.width = '100%';
+    monacoContainer.style.maxWidth = '100%';
+    monacoContainer.style.overflowX = 'auto';
+    monacoContainer.style.boxSizing = 'border-box';
+
+    // Helper to layout editor with explicit dimensions
+    function doLayout() {
+      try{
+        // ensure container has exact height as CSS; use clientWidth/clientHeight
+        const w = monacoContainer.clientWidth;
+        const h = monacoContainer.clientHeight;
+        editor.layout({ width: w, height: h });
+      } catch(e){}
+    }
+
+    // Force layout after creation and on resize to avoid clipping
+    setTimeout(function(){
+      // ensure monaco container is visible and has height; if not, set it
+      if (!monacoContainer.clientHeight) {
+        monacoContainer.style.height = '{{ code_minheight|default:350 }}px';
+      }
+      doLayout();
+    }, 80);
+    window.addEventListener('resize', doLayout);
+    if (window.ResizeObserver) {
+      try {
+        new ResizeObserver(doLayout).observe(monacoContainer);
+      } catch(e){}
+    }
+
+    // Also relayout after fonts load or next animation frame in case measurement changes
+    window.requestAnimationFrame(function(){ setTimeout(doLayout, 80); });
+
+    langSelect.addEventListener('change', function(){ if(editor.getModel()) monaco.editor.setModelLanguage(editor.getModel(), LANG_MAP[langSelect.value] || 'plaintext'); doLayout(); });
+
+    document.getElementById('solution-form').addEventListener('submit', function(){ fallbackTextarea.value = editor.getValue(); });
+
+    document.getElementById('copy-code-btn')?.addEventListener('click', function(){ navigator.clipboard.writeText(editor.getValue()).then(function(){ const btn=document.getElementById('copy-code-btn'); btn.classList.add('btn-primary'); setTimeout(()=>btn.classList.remove('btn-primary'),900); }); });
+  });
+} else { 
+    // Monaco not available — show fallback textarea fully so code is visible
+    fallbackTextarea.classList.remove('d-none'); 
+    fallbackTextarea.style.display = 'block';
+    fallbackTextarea.style.width = '100%';
+    fallbackTextarea.style.minHeight = '{{ code_minheight|default:350 }}px';
+    fallbackTextarea.style.borderRadius = '12px';
+    fallbackTextarea.style.boxSizing = 'border-box';
+    monacoContainer.style.display='none';
+  }
+
+  // If Monaco fails to initialize (network/CSP), fall back to the textarea after a short delay
+  setTimeout(function(){
+    const hasMonaco = monacoContainer.querySelector('.monaco-editor');
+    if(!hasMonaco){
+      fallbackTextarea.classList.remove('d-none');
+      fallbackTextarea.style.display = 'block';
+      fallbackTextarea.style.width = '100%';
+      fallbackTextarea.style.minHeight = '{{ code_minheight|default:350 }}px';
+      fallbackTextarea.style.borderRadius = '12px';
+      fallbackTextarea.style.boxSizing = 'border-box';
+      monacoContainer.style.display = 'none';
+    }
+  }, 1200);
+</script>
+{% endblock %}

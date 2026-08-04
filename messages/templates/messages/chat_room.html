@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Chat with {{ conversation.other_user.username|default:"User" }} — DevLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="msg-page-bg">
+  <div class="msg-container">
+    
+    <div class="msg-layout">
+      
+      <!-- LEFT COLUMN (30%): Conversation List -->
+      <aside class="msg-left-col">
+        <div class="msg-sidebar-card">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h1 class="msg-header-title mb-0">Messages</h1>
+          </div>
+
+          <!-- Search Box -->
+          <div class="msg-search-box">
+            <i class="bi bi-search msg-search-icon"></i>
+            <input type="text" id="convo-search-input" class="msg-search-input" placeholder="Search conversations..." aria-label="Search conversations">
+          </div>
+
+          <!-- Conversations List -->
+          <div class="msg-convo-list" id="convo-list">
+            {% for conv in conversations %}
+              <a href="{% url 'messages:room' conv.id %}" class="msg-convo-card {% if conv.id == conversation.id %}active{% endif %}" id="convo-card-{{ conv.id }}" data-username="{{ conv.other_user.username|lower }}">
+                <div class="msg-avatar-wrapper">
+                  {% if conv.other_user.profile.profile_image %}
+                    <img src="{{ conv.other_user.profile.profile_image.url }}" alt="{{ conv.other_user.username }}" class="msg-avatar">
+                  {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ conv.other_user.username }}&background=2563EB&color=ffffff&size=80" alt="{{ conv.other_user.username }}" class="msg-avatar">
+                  {% endif %}
+                </div>
+                
+                <div class="msg-convo-body">
+                  <div class="msg-convo-top">
+                    <h2 class="msg-username">{{ conv.other_user.username }}</h2>
+                    <time class="msg-time convo-time-text">
+                      {% if conv.last_message %}
+                        {{ conv.last_message.timestamp|timesince }} ago
+                      {% endif %}
+                    </time>
+                  </div>
+                  
+                  <div class="msg-preview-row">
+                    <p class="msg-preview convo-preview-text">
+                      {% if conv.last_message %}
+                        {{ conv.last_message.content|truncatechars:45 }}
+                      {% else %}
+                        No messages yet
+                      {% endif %}
+                    </p>
+                    {% if conv.unread_count > 0 %}
+                      <span class="msg-unread-dot" title="Unread"></span>
+                    {% endif %}
+                  </div>
+                </div>
+              </a>
+            {% empty %}
+              <div class="msg-left-empty">
+                <div class="msg-empty-icon">💬</div>
+                <h2 class="msg-left-empty-title">No conversations yet.</h2>
+                <p class="msg-left-empty-desc">Start a conversation by connecting with another developer.</p>
+              </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- RIGHT COLUMN (70%): Active Chat Room -->
+      <main class="msg-right-col">
+        <div class="msg-chat-card">
+          
+          <!-- Header -->
+          <header class="msg-chat-header">
+            <div class="msg-avatar-wrapper">
+              {% if conversation.other_user.profile.profile_image %}
+                <img src="{{ conversation.other_user.profile.profile_image.url }}" alt="{{ conversation.other_user.username }}" class="msg-avatar">
+              {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ conversation.other_user.username }}&background=2563EB&color=ffffff&size=80" alt="{{ conversation.other_user.username }}" class="msg-avatar">
+              {% endif %}
+            </div>
+            <div class="msg-chat-header-user">
+              <h2 class="msg-chat-username">{{ conversation.other_user.username|default:"Conversation" }}</h2>
+              <span class="msg-online-status">
+                <span class="msg-online-dot"></span>
+                <span>Active now</span>
+              </span>
+            </div>
+          </header>
+
+          <!-- Message History -->
+          <div class="msg-history-area" id="messages-history">
+            {% for msg in messages %}
+              <div class="msg-bubble-group {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+                <div class="msg-bubble">
+                  {{ msg.content }}
+                </div>
+                <time class="msg-timestamp" datetime="{{ msg.timestamp.isoformat }}">
+                  {{ msg.timestamp|naturaltime }}
+                </time>
+              </div>
+            {% empty %}
+              <div class="text-center py-5 text-muted" id="no-messages-placeholder">
+                <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+                No messages in this conversation yet. Send a message to start chatting!
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Message Input Footer -->
+          <footer class="msg-input-footer">
+            <form id="chat-form" class="msg-input-form" onsubmit="sendMessage(event)">
+              {% csrf_token %}
+              <input type="hidden" id="conversation-id" value="{{ conversation.id }}">
+              <textarea id="message-text" class="msg-textarea" rows="1" placeholder="Write a message..." required></textarea>
+              <button type="submit" id="send-btn" class="msg-send-btn">
+                <span>Send</span>
+                <i class="bi bi-send-fill"></i>
+              </button>
+            </form>
+          </footer>
+
+        </div>
+      </main>
+
+    </div>
+
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const historyArea = document.getElementById('messages-history');
+  if (historyArea) {
+    historyArea.scrollTop = historyArea.scrollHeight;
+  }
+
+  const searchInput = document.getElementById('convo-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      document.querySelectorAll('#convo-list .msg-convo-card').forEach(card => {
+        const username = card.dataset.username || '';
+        card.style.display = username.includes(q) ? 'flex' : 'none';
+      });
+    });
+  }
+});
+
+function sendMessage(event) {
+  event.preventDefault();
+  const input = document.getElementById('message-text');
+  const content = input.value.trim();
+  if (!content) return;
+
+  const historyArea = document.getElementById('messages-history');
+  const conversationId = document.getElementById('conversation-id').value;
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+  // Remove empty placeholder if present
+  document.getElementById('no-messages-placeholder')?.remove();
+
+  // Create & append optimistic message bubble
+  const group = document.createElement('div');
+  group.className = 'msg-bubble-group sent';
+  group.innerHTML = `
+    <div class="msg-bubble">${escapeHtml(content)}</div>
+    <time class="msg-timestamp">Just now</time>
+  `;
+  historyArea.appendChild(group);
+  historyArea.scrollTop = historyArea.scrollHeight;
+
+  // Clear input
+  input.value = '';
+
+  // Update left conversation card preview & timestamp
+  const activeCard = document.getElementById(`convo-card-${conversationId}`);
+  if (activeCard) {
+    const previewEl = activeCard.querySelector('.convo-preview-text');
+    const timeEl = activeCard.querySelector('.convo-time-text');
+    if (previewEl) previewEl.textContent = content.length > 45 ? content.substring(0, 45) + '...' : content;
+    if (timeEl) timeEl.textContent = 'Just now';
+  }
+
+  // Send AJAX POST request to backend
+  const formData = new FormData();
+  formData.append('content', content);
+  formData.append('is_ajax', 'true');
+
+  fetch(`/messages/${conversationId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      console.log('Message sent successfully:', data);
+    }
+  })
+  .catch(err => console.error('Error sending message:', err));
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.innerText = text;
+  return div.innerHTML;
+}
+</script>
+{% endblock %}
+
+{% endblock %}

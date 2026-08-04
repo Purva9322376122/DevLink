@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/opportunity_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="opportunity-detail-wrapper">
+
+    <!-- BREADCRUMB -->
+    <nav class="opportunity-breadcrumb" aria-label="Breadcrumb">
+        <div class="breadcrumb-container">
+            <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{% url 'opportunity_list' %}" class="breadcrumb-link">Opportunities</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" aria-current="page">{{ opportunity.title }}</span>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="opportunity-detail-container">
+
+        <!-- HERO HEADER SECTION -->
+        <header class="opportunity-hero">
+            <div class="hero-content">
+                <div class="hero-badges">
+                    {% if opportunity.is_active %}
+                        <span class="badge badge-success" aria-label="Status">
+                            <i class="bi bi-check-circle-fill"></i> Open
+                        </span>
+                    {% else %}
+                        <span class="badge badge-closed" aria-label="Status">
+                            <i class="bi bi-x-circle-fill"></i> Closed
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <h1 class="hero-title">{{ opportunity.title }}</h1>
+                
+                <div class="hero-meta">
+                    <div class="meta-posted-by">
+                        <a href="{% url 'accounts:profile' opportunity.user.username %}" class="meta-link">
+                            {{ opportunity.user.get_full_name|default:opportunity.user.username }}
+                        </a>
+                    </div>
+                    <span class="meta-separator">•</span>
+                    <time class="meta-date" datetime="{{ opportunity.created_at.isoformat }}">
+                        Posted {{ opportunity.created_at|timesince }} ago
+                    </time>
+                </div>
+            </div>
+        </header>
+
+        <!-- TWO COLUMN LAYOUT: 70% main + 30% sidebar -->
+        <div class="detail-layout">
+
+            <!-- MAIN CONTENT (70%) -->
+            <main class="detail-main" role="main">
+
+                <!-- QUICK OVERVIEW STATS -->
+                <section class="overview-stats" aria-labelledby="overview-stats-title">
+                    <h2 id="overview-stats-title" class="sr-only">Opportunity Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Posted</div>
+                            <div class="stat-value">{{ opportunity.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Posted By</div>
+                            <div class="stat-value">
+                                <a href="{% url 'accounts:profile' opportunity.user.username %}" class="stat-link">
+                                    {{ opportunity.user.username }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DESCRIPTION SECTION -->
+                <section class="content-section description-section" aria-labelledby="description-heading">
+                    <h2 id="description-heading" class="section-heading">About This Opportunity</h2>
+                    <div class="section-card description-card">
+                        <div class="description-content">
+                            {{ opportunity.description|escape|linebreaksbr }}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- REQUIRED SKILLS SECTION -->
+                {% if opportunity.required_skills %}
+                <section class="content-section skills-section" aria-labelledby="skills-heading">
+                    <h2 id="skills-heading" class="section-heading">Required Skills</h2>
+                    <div class="section-card skills-card">
+                        <div class="skills-container">
+                            {% for skill in opportunity.required_skills_list %}
+                                <span class="skill-tag" role="tag">{{ skill }}</span>
+                            {% empty %}
+                                <span class="skill-tag" role="tag">{{ opportunity.required_skills }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- ORGANIZER / POSTED BY SECTION -->
+                <section class="content-section organizer-section" aria-labelledby="organizer-heading">
+                    <h2 id="organizer-heading" class="section-heading">About the Organizer</h2>
+                    <div class="section-card organizer-card">
+                        <div class="organizer-header">
+                            <img src="https://ui-avatars.com/api/?name={{ opportunity.user.username }}&background=2563EB&color=ffffff&size=80&bold=true" 
+                                 alt="{{ opportunity.user.username }}" 
+                                 class="organizer-avatar"
+                                 loading="lazy">
+                            <div class="organizer-header-info">
+                                <h3 class="organizer-name">
+                                    <a href="{% url 'accounts:profile' opportunity.user.username %}" class="organizer-link">
+                                        {{ opportunity.user.get_full_name|default:opportunity.user.username }}
+                                    </a>
+                                </h3>
+                                <div class="organizer-meta">
+                                    <span class="organizer-handle">@{{ opportunity.user.username }}</span>
+                                    <span class="organizer-meta-sep">•</span>
+                                    <span class="organizer-joined">
+                                        Member since <time datetime="{{ opportunity.user.date_joined.isoformat }}">{{ opportunity.user.date_joined|date:"M Y" }}</time>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{% url 'accounts:profile' opportunity.user.username %}" class="view-profile-btn">
+                            View Profile
+                        </a>
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- SIDEBAR (30%) -->
+            <aside class="detail-sidebar" aria-label="Opportunity actions and details" role="complementary">
+                <div class="sidebar-content">
+
+                    <!-- OPPORTUNITY INFO CARD -->
+                    <div class="sidebar-card info-card">
+                        <h3 class="card-title">Opportunity Info</h3>
+                        <div class="info-items">
+                            <div class="info-item">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">
+                                    {% if opportunity.is_active %}
+                                        <span class="status-indicator active"></span> Open
+                                    {% else %}
+                                        <span class="status-indicator closed"></span> Closed
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Posted On</span>
+                                <span class="info-value">{{ opportunity.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Posted By</span>
+                                <span class="info-value">
+                                    <a href="{% url 'accounts:profile' opportunity.user.username %}" class="info-link">
+                                        {{ opportunity.user.username }}
+                                    </a>
+                                </span>
+                            </div>
+                            {% if opportunity.required_skills %}
+                            <div class="info-item">
+                                <span class="info-label">Skills</span>
+                                <div class="skill-tags-sm">
+                                    {% for skill in opportunity.required_skills_list %}
+                                        <span class="skill-tag-sm">{{ skill }}</span>
+                                    {% empty %}
+                                        <span class="skill-tag-sm">{{ opportunity.required_skills }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- PRIMARY ACTION CARD -->
+                    <div class="sidebar-card action-card">
+                        {% if user != opportunity.user %}
+                            {% if user_application %}
+                                <!-- APPLICATION STATUS -->
+                                <div class="application-status">
+                                    <div class="status-display">
+                                        {% if user_application.status == "pending" %}
+                                            <div class="status-icon status-icon-pending">⏳</div>
+                                            <div class="status-text">
+                                                <div class="status-badge status-badge-pending">Pending</div>
+                                                <p class="status-message">Your application is under review</p>
+                                            </div>
+                                        {% elif user_application.status == "accepted" %}
+                                            <div class="status-icon status-icon-accepted">✓</div>
+                                            <div class="status-text">
+                                                <div class="status-badge status-badge-accepted">Accepted</div>
+                                                <p class="status-message">Great! Your application was accepted</p>
+                                            </div>
+                                        {% elif user_application.status == "rejected" %}
+                                            <div class="status-icon status-icon-rejected">✕</div>
+                                            <div class="status-text">
+                                                <div class="status-badge status-badge-rejected">Rejected</div>
+                                                <p class="status-message">Unfortunately, your application was not selected</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- APPLY FORM -->
+                                <form method="POST" action="{% url 'apply_opportunity' opportunity.id %}" class="apply-form" novalidate>
+                                    {% csrf_token %}
+                                    <h3 class="card-action-title">Ready to Apply?</h3>
+                                    
+                                    <div class="form-field">
+                                        <label for="message" class="form-field-label">Tell us why you're a great fit *</label>
+                                        <textarea 
+                                            id="message" 
+                                            name="message" 
+                                            class="form-control form-textarea" 
+                                            placeholder="Share your interest and relevant experience..."
+                                            required
+                                            aria-required="true"
+                                            minlength="10"
+                                            maxlength="2000"></textarea>
+                                        <span class="form-hint">Minimum 10 characters</span>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label for="github" class="form-field-label">GitHub Profile <span class="optional">(Optional)</span></label>
+                                        <input 
+                                            type="url" 
+                                            id="github" 
+                                            name="github" 
+                                            class="form-control form-input" 
+                                            placeholder="https://github.com/username">
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label for="resume" class="form-field-label">Resume Link <span class="optional">(Optional)</span></label>
+                                        <input 
+                                            type="url" 
+                                            id="resume" 
+                                            name="resume" 
+                                            class="form-control form-input" 
+                                            placeholder="https://example.com/resume.pdf">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary btn-apply">
+                                        <i class="bi bi-send"></i> Submit Application
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <!-- OWNER VIEW -->
+                            <div class="owner-view">
+                                <div class="owner-icon">👤</div>
+                                <p class="owner-label">You are the organizer</p>
+                                <a href="{% url 'view_applications' opportunity.id %}" class="btn btn-secondary btn-view-apps">
+                                    <i class="bi bi-file-text"></i> View Applications
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- SHARE CARD -->
+                    <div class="sidebar-card share-card">
+                        <h3 class="card-title">Share This</h3>
+                        <div class="share-buttons-group">
+                            <button class="share-btn share-btn-twitter" aria-label="Share on Twitter" title="Share on Twitter" data-share="twitter">
+                                <i class="bi bi-twitter"></i> <span>Share</span>
+                            </button>
+                            <button class="share-btn share-btn-linkedin" aria-label="Share on LinkedIn" title="Share on LinkedIn" data-share="linkedin">
+                                <i class="bi bi-linkedin"></i> <span>Share</span>
+                            </button>
+                            <button class="share-btn share-btn-copy" aria-label="Copy link" title="Copy link to clipboard" data-share="copy">
+                                <i class="bi bi-link-45deg"></i> <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- SCRIPTS -->
+<script src="{% static 'js/opportunity_detail.js' %}"></script>
+
+{% endblock %}

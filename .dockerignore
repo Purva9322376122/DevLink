@@ -1,0 +1,44 @@
+# Git
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Environment secrets — NEVER copy .env into image
+.env
+
+# Django development artifacts
+db.sqlite3
+staticfiles/
+media/
+
+# Logs
+logs/
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Spec / docs (not needed at runtime)
+.kiro/
+
+# Docker files themselves (not needed inside the image)
+docker-compose*.yml
+Dockerfile*
+docker/
