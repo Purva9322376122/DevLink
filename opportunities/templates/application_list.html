@@ -1,135 +1,284 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/manage_applications.css' %}">
+{% endblock %}
 
 {% block content %}
+<div class="recruiter-dashboard-container">
 
-<div class="max-w-6xl mx-auto mt-10">
-
-    <!-- HEADER -->
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Applications</h1>
-            <p class="text-sm text-gray-500">People who applied to your opportunities</p>
-        </div>
+    <!-- PAGE HEADER -->
+    <div class="recruiter-header">
+        <h1 class="recruiter-title">Manage Applications</h1>
+        <p class="recruiter-subtitle">Review, evaluate, and manage candidate applications for your posted opportunities.</p>
     </div>
 
-    {% if applications %}
+    <!-- MAIN RECRUITER GRID -->
+    <div class="recruiter-grid">
 
-        <div class="space-y-4">
+        <!-- LEFT COLUMN (70% WIDTH) -->
+        <div class="recruiter-main-col">
 
-            {% for app in applications %}
-            <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+            <!-- SEARCH BAR -->
+            <form method="GET" action="." class="recruiter-search-box">
+                {% if selected_status %}
+                    <input type="hidden" name="status" value="{{ selected_status }}">
+                {% endif %}
+                <i class="bi bi-search recruiter-search-icon"></i>
+                <input type="text" 
+                       name="q" 
+                       value="{{ search_query }}" 
+                       class="recruiter-search-input" 
+                       placeholder="Search candidate username, role, or proposal text..." 
+                       aria-label="Search candidates">
+            </form>
 
-                <!-- TOP -->
-                <div class="flex items-start justify-between">
-
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            {{ app.user.username }}
-                        </h2>
-
-                        <p class="text-sm text-gray-500">
-                            Applied for:
-                            <span class="font-medium text-gray-700">
-                                {{ app.opportunity.title }}
-                            </span>
-                        </p>
-
-                        {% comment %} <a href="{% url 'send_invitation' app.user.id app.opportunity.id %}"
-                            class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                            Invite
-                        </a> {% endcomment %}
-
-                        <form method="POST" action="{% url 'send_invitation' %}">
-                            {% csrf_token %}
-
-                            <input type="hidden" name="username" value="{{ app.user.username }}">
-                            <input type="hidden" name="message" value="Let's collaborate">
-
-                            <button type="submit"
-                                class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-                                Invite
-                            </button>
-                        </form>
-
-
-                    </div>
-
-                    <span class="text-xs text-gray-400">
-                        {{ app.created_at|timesince }} ago
-                    </span>
-                </div>
-
-                <!-- MESSAGE -->
-                <div class="mt-4 text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                    {{ app.message }}
-                </div>
-
-                <!-- LINKS -->
-                <div class="mt-4 flex flex-wrap gap-3 text-sm">
-
-                    {% if app.github %}
-                        <a href="{{ app.github }}" target="_blank"
-                           class="text-blue-600 hover:underline">
-                           GitHub
-                        </a>
-                    {% endif %}
-
-                    {% if app.resume %}
-                        <a href="{{ app.resume }}" target="_blank"
-                           class="text-green-600 hover:underline">
-                           Resume
-                        </a>
-                    {% endif %}
-
-                    <a href="{% url 'accounts:profile' app.user.username %}"
-                       class="text-gray-600 hover:underline">
-                       View Profile
-                    </a>
-
-                </div>
-
-                <!-- ACTIONS -->
-                <div class="mt-5 flex gap-3">
-
-                    {% if app.status == "pending" %}
-                        <a href="{% url 'accept_application' app.id %}"
-                        class="bg-green-600 text-white px-4 py-1 rounded text-sm hover:bg-green-700">
-                            Accept
-                        </a>
-
-                        <a href="{% url 'reject_application' app.id %}"
-                        class="bg-red-500 text-white px-4 py-1 rounded text-sm hover:bg-red-600">
-                            Reject
-                        </a>
-
-                    {% elif app.status == "accepted" %}
-                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm">
-                            Accepted ✅
-                        </span>
-
-                    {% elif app.status == "rejected" %}
-                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">
-                            Rejected ❌
-                        </span>
-                    {% endif %}
-
-                </div>
-
+            <!-- HORIZONTAL STATUS FILTER TABS -->
+            <div class="recruiter-tabs" role="tablist" aria-label="Candidate status filters">
+                <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" 
+                   class="recruiter-tab-btn {% if selected_status == 'all' %}active{% endif %}">
+                    All <span class="recruiter-tab-badge">{{ all_apps_count }}</span>
+                </a>
+                <a href="?status=pending{% if search_query %}&q={{ search_query }}{% endif %}" 
+                   class="recruiter-tab-btn {% if selected_status == 'pending' or selected_status == 'received' %}active{% endif %}">
+                    Pending Review <span class="recruiter-tab-badge">{{ pending_count }}</span>
+                </a>
+                <a href="?status=accepted{% if search_query %}&q={{ search_query }}{% endif %}" 
+                   class="recruiter-tab-btn {% if selected_status == 'accepted' or selected_status == 'shortlisted' %}active{% endif %}">
+                    Accepted / Shortlisted <span class="recruiter-tab-badge">{{ accepted_count }}</span>
+                </a>
+                <a href="?status=rejected{% if search_query %}&q={{ search_query }}{% endif %}" 
+                   class="recruiter-tab-btn {% if selected_status == 'rejected' %}active{% endif %}">
+                    Rejected <span class="recruiter-tab-badge">{{ rejected_count }}</span>
+                </a>
             </div>
-            {% endfor %}
+
+            <!-- CANDIDATE CARDS LIST -->
+            {% if applications %}
+                <div class="candidate-cards-list">
+                    {% for app in applications %}
+                        <div class="candidate-card">
+                            
+                            <!-- CARD HEADER (AVATAR, CANDIDATE NAME, OPPORTUNITY TITLE, TIMESTAMP) -->
+                            <div class="candidate-header">
+                                <div class="candidate-user-info">
+                                    {% if app.user.profile.profile_image %}
+                                        <img src="{{ app.user.profile.profile_image.url }}" alt="{{ app.user.username }}" class="candidate-avatar">
+                                    {% else %}
+                                        <div class="candidate-avatar" aria-hidden="true">
+                                            {{ app.user.username|slice:":2"|upper }}
+                                        </div>
+                                    {% endif %}
+
+                                    <div>
+                                        <h2 class="candidate-name">
+                                            <a href="{% url 'accounts:profile' app.user.username %}">
+                                                {{ app.user.username }}
+                                            </a>
+                                        </h2>
+                                        <div class="candidate-applied-for">
+                                            Applied for: <a href="{% url 'opportunity_detail' id=app.opportunity.id %}">{{ app.opportunity.title }}</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="candidate-time">
+                                    <i class="bi bi-clock"></i> {{ app.created_at|timesince }} ago
+                                </div>
+                            </div>
+
+                            <!-- PITCH / COVER NOTE -->
+                            {% if app.message %}
+                                <div class="candidate-pitch">
+                                    <div class="candidate-pitch-title">Candidate Proposal</div>
+                                    <div>"{{ app.message }}"</div>
+                                </div>
+                            {% endif %}
+
+                            <!-- ATTACHMENT & PROFILE LINK PILLS -->
+                            <div class="candidate-links">
+                                {% if app.github %}
+                                    <a href="{{ app.github }}" target="_blank" rel="noopener" class="candidate-link-pill candidate-link-github">
+                                        <i class="bi bi-github"></i> GitHub Profile
+                                    </a>
+                                {% endif %}
+
+                                {% if app.resume %}
+                                    <a href="{{ app.resume }}" target="_blank" rel="noopener" class="candidate-link-pill candidate-link-resume">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i> View Resume / Portfolio
+                                    </a>
+                                {% endif %}
+
+                                <a href="{% url 'accounts:profile' app.user.username %}" class="candidate-link-pill">
+                                    <i class="bi bi-person-badge-fill"></i> View Full Developer Profile
+                                </a>
+                            </div>
+
+                            <!-- CARD FOOTER (STATUS & RECRUITER ACTIONS) -->
+                            <div class="candidate-footer">
+                                <div>
+                                    {% if app.status == "pending" %}
+                                        <span class="status-badge status-badge-pending">
+                                            <i class="bi bi-hourglass-split"></i> Pending Review
+                                        </span>
+                                    {% elif app.status == "accepted" %}
+                                        <span class="status-badge status-badge-accepted">
+                                            <i class="bi bi-check-circle-fill"></i> Accepted / Shortlisted
+                                        </span>
+                                    {% elif app.status == "rejected" %}
+                                        <span class="status-badge status-badge-rejected">
+                                            <i class="bi bi-x-circle-fill"></i> Rejected
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- ACTIONS -->
+                                <div class="candidate-actions">
+                                    {% if app.status == "pending" %}
+                                        <a href="{% url 'accept_application' app.id %}" class="btn-accept" title="Accept candidate">
+                                            <i class="bi bi-check-lg"></i> Accept
+                                        </a>
+
+                                        <a href="{% url 'reject_application' app.id %}" class="btn-reject" title="Reject candidate">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </a>
+
+                                        <form method="POST" action="{% url 'send_invitation' %}" class="inline-block">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="username" value="{{ app.user.username }}">
+                                            <input type="hidden" name="message" value="Let's collaborate on {{ app.opportunity.title }}">
+                                            <button type="submit" class="btn-invite" title="Invite user to collaborate">
+                                                <i class="bi bi-person-plus-fill"></i> Invite
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form method="POST" action="{% url 'send_invitation' %}" class="inline-block">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="username" value="{{ app.user.username }}">
+                                            <input type="hidden" name="message" value="Let's collaborate on {{ app.opportunity.title }}">
+                                            <button type="submit" class="btn-invite" title="Invite user to collaborate">
+                                                <i class="bi bi-person-plus-fill"></i> Invite
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- PAGINATION -->
+                {% if page_obj and page_obj.has_other_pages %}
+                    <div class="recruiter-pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}{% if search_query %}&q={{ search_query }}{% endif %}" class="recruiter-page-btn" aria-label="Previous page">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </a>
+                        {% endif %}
+
+                        {% for p in page_obj.paginator.page_range %}
+                            {% if page_obj.number == p %}
+                                <span class="recruiter-page-btn active">{{ p }}</span>
+                            {% elif p > page_obj.number|add:"-3" and p < page_obj.number|add:"3" %}
+                                <a href="?page={{ p }}&status={{ selected_status }}{% if search_query %}&q={{ search_query }}{% endif %}" class="recruiter-page-btn">{{ p }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}{% if search_query %}&q={{ search_query }}{% endif %}" class="recruiter-page-btn" aria-label="Next page">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- EMPTY STATE -->
+                <div class="recruiter-empty-card">
+                    <div class="recruiter-empty-icon" aria-hidden="true">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <h3 class="recruiter-empty-title">📬 No Applications Received Yet</h3>
+                    <p class="recruiter-empty-sub">Once candidates apply to your posted opportunities, their proposals, resumes, and profiles will appear here for evaluation.</p>
+                    <a href="{% url 'create_opportunity' %}" class="recruiter-empty-btn">
+                        <i class="bi bi-plus-circle-fill"></i> Post New Opportunity
+                    </a>
+                </div>
+            {% endif %}
 
         </div>
 
-    {% else %}
+        <!-- RIGHT SIDEBAR (30% WIDTH) -->
+        <div class="recruiter-sidebar-col">
 
-        <!-- EMPTY STATE -->
-        <div class="text-center mt-20 text-gray-500">
-            <p class="text-lg">No applications yet</p>
-            <p class="text-sm">Once users apply, they will appear here</p>
+            <!-- RECRUITER SUMMARY WIDGET -->
+            <div class="recruiter-widget">
+                <h3 class="recruiter-widget-title">
+                    <i class="bi bi-pie-chart-fill text-indigo-600"></i>
+                    <span>Applications Overview</span>
+                </h3>
+
+                <div class="recruiter-summary-row">
+                    <div class="recruiter-summary-label">
+                        <i class="bi bi-folder2-open text-blue-600"></i>
+                        <span>Total Received</span>
+                    </div>
+                    <span class="recruiter-summary-count">{{ all_apps_count }}</span>
+                </div>
+
+                <div class="recruiter-summary-row">
+                    <div class="recruiter-summary-label">
+                        <i class="bi bi-hourglass-split text-amber-500"></i>
+                        <span>Pending Review</span>
+                    </div>
+                    <span class="recruiter-summary-count">{{ pending_count }}</span>
+                </div>
+
+                <div class="recruiter-summary-row">
+                    <div class="recruiter-summary-label">
+                        <i class="bi bi-check-circle-fill text-emerald-600"></i>
+                        <span>Accepted / Shortlisted</span>
+                    </div>
+                    <span class="recruiter-summary-count">{{ accepted_count }}</span>
+                </div>
+
+                <div class="recruiter-summary-row">
+                    <div class="recruiter-summary-label">
+                        <i class="bi bi-x-circle-fill text-rose-500"></i>
+                        <span>Rejected</span>
+                    </div>
+                    <span class="recruiter-summary-count">{{ rejected_count }}</span>
+                </div>
+            </div>
+
+            <!-- HIRING TIPS WIDGET -->
+            <div class="recruiter-widget">
+                <h3 class="recruiter-widget-title">
+                    <i class="bi bi-lightbulb-fill text-amber-500"></i>
+                    <span>Hiring Best Practices</span>
+                </h3>
+
+                <div class="recruiter-tip-item">
+                    <i class="bi bi-lightning-charge-fill text-amber-500"></i>
+                    <span><strong>Review applications promptly</strong> within 48 hours to secure top developer talent.</span>
+                </div>
+
+                <div class="recruiter-tip-item">
+                    <i class="bi bi-shield-check text-emerald-600"></i>
+                    <span><strong>Inspect GitHub & Portfolios</strong> to verify real code samples and project history.</span>
+                </div>
+
+                <div class="recruiter-tip-item">
+                    <i class="bi bi-chat-left-dots-fill text-blue-600"></i>
+                    <span><strong>Send clear feedback</strong> when accepting or declining applications to maintain a strong developer brand.</span>
+                </div>
+            </div>
+
         </div>
 
-    {% endif %}
+    </div>
 
 </div>
-
 {% endblock %}
