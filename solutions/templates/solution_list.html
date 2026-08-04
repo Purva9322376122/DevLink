@@ -773,13 +773,21 @@
       <!-- Card Header: Author Info + Accept Button -->
       <div class="solution-card-header">
         <div class="solution-author-section">
-          <a href="{% url 'accounts:profile' sol.user.username %}" aria-label="Profile: {{ sol.user.username }}">
+          {% if sol.user and sol.user.username %}
+          <a href="{% url 'accounts:profile' username=sol.user.username %}" aria-label="Profile: {{ sol.user.username }}">
             <div class="solution-avatar" style="background-image: url('{{ sol.user.profile.avatar_url|default:'' }}');" aria-hidden="true"></div>
           </a>
           <div class="solution-author-info">
-            <a href="{% url 'accounts:profile' sol.user.username }}" class="solution-author-name">{{ sol.user.username }}</a>
+            <a href="{% url 'accounts:profile' username=sol.user.username %}" class="solution-author-name">{{ sol.user.username }}</a>
             <span class="solution-author-meta">{{ sol.created_at|timesince }} ago{% if sol.language %} · {{ sol.language }}{% endif %}</span>
           </div>
+          {% else %}
+          <div class="solution-avatar" style="background-image: url('');" aria-hidden="true"></div>
+          <div class="solution-author-info">
+            <span class="solution-author-name text-muted">Anonymous</span>
+            <span class="solution-author-meta">{{ sol.created_at|timesince }} ago{% if sol.language %} · {{ sol.language }}{% endif %}</span>
+          </div>
+          {% endif %}
         </div>
 
         <div class="solution-action">
