@@ -293,20 +293,96 @@ def apply_opportunity(request, pk):
 @login_required
 def view_applications(request, pk):
     opportunity = get_object_or_404(Opportunity, id=pk, user=request.user)
-    applications = Application.objects.filter(opportunity=opportunity)
+    all_apps = Application.objects.filter(
+        opportunity=opportunity
+    ).select_related('user', 'user__profile', 'opportunity').order_by('-created_at')
+
+    total_count = all_apps.count()
+    pending_count = all_apps.filter(status='pending').count()
+    accepted_count = all_apps.filter(status='accepted').count()
+    rejected_count = all_apps.filter(status='rejected').count()
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        all_apps = all_apps.filter(
+            Q(user__username__icontains=q) |
+            Q(message__icontains=q) |
+            Q(opportunity__title__icontains=q)
+        )
+
+    selected_status = request.GET.get('status', 'all').lower()
+    if selected_status in ['pending', 'received']:
+        filtered_apps = all_apps.filter(status='pending')
+    elif selected_status in ['accepted', 'shortlisted']:
+        filtered_apps = all_apps.filter(status='accepted')
+    elif selected_status == 'rejected':
+        filtered_apps = all_apps.filter(status='rejected')
+    else:
+        filtered_apps = all_apps
+        selected_status = 'all'
+
+    paginator = Paginator(filtered_apps, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "application_list.html", {
-        "applications": applications,
+        "applications": page_obj,
+        "page_obj": page_obj,
         "opportunity": opportunity,
+        "all_apps_count": total_count,
+        "pending_count": pending_count,
+        "accepted_count": accepted_count,
+        "rejected_count": rejected_count,
+        "selected_status": selected_status,
+        "search_query": q,
     })
 
 
 @login_required
 def application_list(request):
-    """Opportunity owner — manages received applications."""
-    applications = Application.objects.filter(
+    """Opportunity owner — manages received applications across all opportunities."""
+    all_apps = Application.objects.filter(
         opportunity__user=request.user
-    ).select_related('user', 'opportunity').order_by('-created_at')
-    return render(request, 'application_list.html', {'applications': applications})
+    ).select_related('user', 'user__profile', 'opportunity').order_by('-created_at')
+
+    total_count = all_apps.count()
+    pending_count = all_apps.filter(status='pending').count()
+    accepted_count = all_apps.filter(status='accepted').count()
+    rejected_count = all_apps.filter(status='rejected').count()
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        all_apps = all_apps.filter(
+            Q(user__username__icontains=q) |
+            Q(message__icontains=q) |
+            Q(opportunity__title__icontains=q)
+        )
+
+    selected_status = request.GET.get('status', 'all').lower()
+    if selected_status in ['pending', 'received']:
+        filtered_apps = all_apps.filter(status='pending')
+    elif selected_status in ['accepted', 'shortlisted']:
+        filtered_apps = all_apps.filter(status='accepted')
+    elif selected_status == 'rejected':
+        filtered_apps = all_apps.filter(status='rejected')
+    else:
+        filtered_apps = all_apps
+        selected_status = 'all'
+
+    paginator = Paginator(filtered_apps, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'application_list.html', {
+        'applications': page_obj,
+        'page_obj': page_obj,
+        'all_apps_count': total_count,
+        'pending_count': pending_count,
+        'accepted_count': accepted_count,
+        'rejected_count': rejected_count,
+        'selected_status': selected_status,
+        'search_query': q,
+    })
 
 
 @login_required
@@ -439,7 +515,7 @@ def chat(request, username):
             return redirect("chat", username=other_user.username)
 
     return render(request, "chat.html", {
-        "messages": chat_messages,
+        "chat_messages": chat_messages,
         "other_user": other_user,
     })
 

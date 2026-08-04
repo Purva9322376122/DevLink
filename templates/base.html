@@ -34,9 +34,11 @@
 {% if messages %}
 <div class="dl-page-messages">
   {% for message in messages %}
-  <div class="dl-alert dl-alert-{{ message.tags|default:'info' }}">
-    {{ message }}
-  </div>
+    {% if message.tags %}
+      <div class="dl-alert dl-alert-{{ message.tags|default:'info' }}">
+        {{ message }}
+      </div>
+    {% endif %}
   {% endfor %}
 </div>
 {% endif %}

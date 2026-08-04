@@ -11,8 +11,8 @@
     <!-- Messages area -->
     <div id="chat-box" class="p-3" style="background:transparent;">
 
-      {% if messages %}
-        {% for msg in messages %}
+      {% if chat_messages %}
+        {% for msg in chat_messages %}
           {% if msg.sender == request.user %}
             <div class="message-row outgoing">
               <div class="message-bubble outgoing">

@@ -136,5 +136,5 @@ def chat_room(request, conversation_id):
     return render(request, 'messages/chat_room.html', {
         'conversation': conv,
         'conversations': conversations,
-        'messages': messages,
+        'chat_messages': messages,
     })

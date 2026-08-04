@@ -99,7 +99,7 @@
 
           <!-- Message History -->
           <div class="msg-history-area" id="messages-history">
-            {% for msg in messages %}
+            {% for msg in chat_messages %}
               <div class="msg-bubble-group {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
                 <div class="msg-bubble">
                   {{ msg.content }}
