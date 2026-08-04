@@ -1,15 +1,15 @@
 {% load static %}
 <!-- Find Developers Modal -->
 <div class="custom-modal-backdrop" id="findDevelopersModal" tabindex="-1" role="dialog" aria-labelledby="findDevsModalTitle" aria-hidden="true">
-  <div class="custom-modal custom-modal-xl" role="document">
+  <div class="custom-modal custom-modal-compact" role="document">
     
     <!-- Compact Modal Header -->
-    <div class="custom-modal-header py-3 px-4 d-flex align-items-center justify-content-between">
+    <div class="custom-modal-header py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
       <div class="header-text-wrapper">
-        <h3 class="custom-modal-title fs-5 mb-0" id="findDevsModalTitle">
+        <h3 class="custom-modal-title fs-5 fw-bold mb-0" id="findDevsModalTitle">
           <i class="bi bi-person-plus-fill text-primary me-2"></i>Find Developers
         </h3>
-        <p class="custom-modal-subtitle small text-muted mb-0">Send connection invitations and grow your professional network.</p>
+        <p class="custom-modal-subtitle small text-muted mb-0">Send connection invitations and grow your network.</p>
       </div>
       <button type="button" class="custom-modal-close" onclick="closeFindDevelopersModal()" aria-label="Close modal">&times;</button>
     </div>
@@ -17,26 +17,22 @@
     <!-- Modal Body -->
     <div class="custom-modal-body p-3">
       
-      <!-- Direct Invitation Form (Compact 38px Row) -->
+      <!-- Direct Invitation Section (Custom Flex Grid) -->
       <section class="modal-section modal-invite-section mb-3 p-3">
         <h4 class="modal-section-title small fw-bold mb-2"><i class="bi bi-send text-primary me-1"></i> Send Direct Invitation</h4>
         <form method="post" action="{% url 'send_invitation' %}" class="direct-invite-form">
           {% csrf_token %}
-          <div class="row g-2 align-items-center">
-            <div class="col-lg-4 col-md-4">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-at text-primary"></i></span>
-                <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="Username (e.g. alex_dev)" required style="height:38px; font-size:0.85rem;">
-              </div>
+          <div class="direct-invite-grid">
+            <div class="input-group input-group-sm flex-grow-1">
+              <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-at text-primary"></i></span>
+              <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="Username (e.g. alex_dev)" required style="height:38px; font-size:0.85rem;">
             </div>
-            <div class="col-lg-5 col-md-5">
+            <div class="flex-grow-1" style="flex: 1.2;">
               <input type="text" name="message" class="form-control form-control-sm" placeholder="Personal message (optional)" style="height:38px; font-size:0.85rem;">
             </div>
-            <div class="col-lg-3 col-md-3">
-              <button type="submit" class="dl-btn dl-btn-primary w-100 fw-semibold" style="height:38px; font-size:0.85rem;">
-                <i class="bi bi-send-fill me-1"></i> Send Invitation
-              </button>
-            </div>
+            <button type="submit" class="dl-btn dl-btn-primary fw-semibold flex-shrink-0" style="height:38px; font-size:0.85rem; px-3;">
+              <i class="bi bi-send-fill me-1"></i> Invite
+            </button>
           </div>
         </form>
       </section>
@@ -48,13 +44,13 @@
           <h4 class="modal-section-title small fw-bold mb-0"><i class="bi bi-people-fill text-primary me-1"></i> Developers</h4>
           
           <!-- Filter Controls Bar -->
-          <div class="d-flex align-items-center gap-2" style="max-width: 460px; width: 100%;">
+          <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 420px;">
             <div class="input-group input-group-sm flex-grow-1">
               <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-search text-muted"></i></span>
-              <input type="search" id="modal-dev-search" class="form-control form-control-sm border-start-0 ps-0" placeholder="Search name or skill..." style="height:34px; font-size:0.82rem;">
+              <input type="search" id="modal-dev-search" class="form-control form-control-sm border-start-0 ps-0" placeholder="Search name or skill..." style="height:32px; font-size:0.8rem;">
             </div>
             
-            <select id="modal-dev-role" class="form-select form-select-sm" style="width: 110px; height:34px; font-size:0.82rem;" aria-label="Filter by Role">
+            <select id="modal-dev-role" class="form-select form-select-sm" style="width: 105px; height:32px; font-size:0.8rem;" aria-label="Filter by Role">
               <option value="all" selected>All Roles</option>
               <option value="fullstack">Full-Stack</option>
               <option value="frontend">Frontend</option>
@@ -63,7 +59,7 @@
               <option value="devops">DevOps</option>
             </select>
 
-            <select id="modal-dev-loc" class="form-select form-select-sm" style="width: 110px; height:34px; font-size:0.82rem;" aria-label="Filter by Location">
+            <select id="modal-dev-loc" class="form-select form-select-sm" style="width: 105px; height:32px; font-size:0.8rem;" aria-label="Filter by Location">
               <option value="all" selected>All Locations</option>
               <option value="remote">Remote</option>
               <option value="worldwide">Worldwide</option>
@@ -72,7 +68,7 @@
         </div>
 
         <!-- Scrollable Developers List -->
-        <div class="modal-dev-list-scrollable" id="modal-dev-list" style="max-height:320px; overflow-y:auto;">
+        <div class="modal-dev-list-scrollable" id="modal-dev-list" style="max-height:260px; overflow-y:auto;">
           {% for d_user in discover_users %}
           <div class="modal-dev-card" 
                data-name="{{ d_user.get_full_name|default:d_user.username|lower }}" 
@@ -83,25 +79,25 @@
                style="cursor: pointer;"
                title="View profile of {{ d_user.username }}">
             
-            <div class="modal-dev-card-body d-flex align-items-center gap-3">
-              <!-- Left: 42px Avatar -->
-              <div class="modal-dev-avatar-wrapper position-relative">
-                <img src="{{ d_user.avatar_url }}" alt="{{ d_user.username }}" class="modal-dev-avatar" width="42" height="42">
+            <div class="modal-dev-card-body d-flex align-items-center gap-2 flex-grow-1 overflow-hidden">
+              <!-- Avatar (40px) -->
+              <div class="modal-dev-avatar-wrapper position-relative flex-shrink-0">
+                <img src="{{ d_user.avatar_url }}" alt="{{ d_user.username }}" class="modal-dev-avatar" width="40" height="40">
                 <span class="status-dot-online"></span>
               </div>
               
-              <!-- Center: Developer Details -->
+              <!-- Center Details -->
               <div class="modal-dev-details flex-grow-1 overflow-hidden">
-                <div class="modal-dev-header-line d-flex align-items-center gap-2 flex-wrap mb-0-5">
-                  <span class="modal-dev-name fw-bold text-dark" style="font-size:0.92rem;">{{ d_user.get_full_name|default:d_user.username }}</span>
+                <div class="modal-dev-header-line d-flex align-items-center gap-2 flex-wrap">
+                  <span class="modal-dev-name fw-bold text-dark" style="font-size:0.9rem;">{{ d_user.get_full_name|default:d_user.username }}</span>
                   <span class="modal-dev-handle text-muted small">@{{ d_user.username }}</span>
                   <span class="modal-dev-badge"><i class="bi bi-briefcase me-1"></i>{{ d_user.job_title }}</span>
                 </div>
 
                 <div class="modal-dev-meta-line d-flex align-items-center gap-2 flex-wrap">
-                  <span class="modal-dev-mutual"><i class="bi bi-people me-1"></i>Mutual connection</span>
+                  <span class="modal-dev-mutual"><i class="bi bi-people me-1"></i>Mutual</span>
                   <span class="modal-dev-location"><i class="bi bi-geo-alt me-1"></i>{{ d_user.profile.location|default:"Remote" }}</span>
-                  <span class="modal-dev-bio text-secondary small text-truncate ms-1" style="max-width: 280px; font-size:0.78rem;">
+                  <span class="modal-dev-bio text-secondary small text-truncate ms-1" style="max-width: 240px; font-size:0.76rem;">
                     {% if d_user.profile.bio %}
                       {{ d_user.profile.bio }}
                     {% else %}
@@ -113,11 +109,11 @@
             </div>
 
             <!-- Right: Connect Button -->
-            <div class="modal-dev-card-action ms-2">
+            <div class="modal-dev-card-action ms-2 flex-shrink-0">
               <form method="post" action="{% url 'send_invitation' %}" style="margin:0;" onclick="event.stopPropagation();">
                 {% csrf_token %}
                 <input type="hidden" name="username" value="{{ d_user.username }}">
-                <button type="submit" class="btn btn-sm btn-primary rounded-pill fw-semibold modal-connect-btn" style="min-width: 92px; height: 34px; font-size: 0.82rem;">
+                <button type="submit" class="btn btn-sm btn-primary rounded-pill fw-semibold modal-connect-btn" style="min-width: 86px; height: 32px; font-size: 0.8rem;">
                   <i class="bi bi-person-plus-fill me-1"></i> Connect
                 </button>
               </form>
@@ -126,7 +122,6 @@
           {% endfor %}
           
           <div id="modal-no-results" class="text-center py-3 text-muted d-none">
-            <i class="bi bi-search fs-4 text-secondary d-block mb-1"></i>
             <p class="small mb-0">No developers match your search or filter criteria.</p>
           </div>
         </div>

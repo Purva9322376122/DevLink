@@ -849,9 +849,25 @@
 }
 
 .custom-modal.custom-modal-lg,
+.custom-modal.custom-modal-compact,
 .custom-modal.custom-modal-xl {
-  max-width: 850px !important;
-  width: 94%;
+  max-width: 680px !important;
+  width: 90%;
+  margin: auto;
+}
+
+.direct-invite-grid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .direct-invite-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .custom-modal-backdrop.show .custom-modal {

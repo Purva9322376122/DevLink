@@ -853,19 +853,34 @@
   background: rgba(99, 102, 241, 0.04);
 }
 
-/* Spacious Find Developers Modal Styles */
+/* 680px Compact Find Developers Modal Styles */
+.custom-modal.custom-modal-compact,
 .custom-modal.custom-modal-xl {
-  max-width: 780px !important;
-  width: 92%;
-  border-radius: 24px;
+  max-width: 680px !important;
+  width: 90%;
+  border-radius: 20px;
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
   margin: auto;
 }
 
+.direct-invite-grid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .direct-invite-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 .custom-modal-subtitle {
   color: var(--muted, #64748b);
-  font-size: 0.92rem;
-  margin-top: 4px;
+  font-size: 0.88rem;
+  margin-top: 2px;
   font-weight: 400;
 }
 
