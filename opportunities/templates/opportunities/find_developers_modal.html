@@ -3,9 +3,9 @@
 <div class="custom-modal-backdrop" id="findDevelopersModal" tabindex="-1" role="dialog" aria-labelledby="findDevsModalTitle" aria-hidden="true">
   <div class="custom-modal custom-modal-pixel-perfect" role="document">
     
-    <!-- Modal Header -->
-    <div class="modal-header-pp">
-      <div class="d-flex align-items-center gap-3">
+    <!-- Modal Header (Compact & Tight Spacing) -->
+    <div class="modal-header-pp position-relative">
+      <div class="d-flex align-items-center gap-3 pe-4">
         <div class="modal-header-icon">
           <i class="bi bi-people-fill"></i>
         </div>
@@ -14,15 +14,15 @@
           <p class="modal-header-sub mb-0">Send connection invitations and grow your professional network.</p>
         </div>
       </div>
-      <button type="button" class="modal-close-pp" onclick="closeFindDevelopersModal()" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-pp position-absolute top-0 end-0 m-3" onclick="closeFindDevelopersModal()" aria-label="Close modal">&times;</button>
     </div>
 
-    <!-- Modal Body -->
+    <!-- Modal Body (Minimal Padding) -->
     <div class="modal-body-pp">
       
       <!-- Send Direct Invitation Section -->
       <section class="modal-section-pp">
-        <h4 class="section-title-pp"><i class="bi bi-send-fill me-2 text-primary"></i>Send Direct Invitation</h4>
+        <h4 class="section-title-pp mb-2"><i class="bi bi-send-fill me-2 text-primary"></i>Send Direct Invitation</h4>
         <form method="post" action="{% url 'send_invitation' %}" class="direct-invite-form-pp">
           {% csrf_token %}
           <div class="direct-invite-grid-pp">
