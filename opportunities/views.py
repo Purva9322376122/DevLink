@@ -54,13 +54,46 @@ def send_invitation(request):
         receiver = User.objects.filter(username__iexact=username).first()
         if not receiver:
             messages.error(request, "User not found")
-            return redirect("invitation_list")
+            return redirect("connection_list")
         if receiver == request.user:
-            messages.error(request, "You cannot invite yourself")
-            return redirect("invitation_list")
-        Invitation.objects.create(sender=request.user, receiver=receiver, message=message)
-        messages.success(request, "Invitation sent")
-    return redirect("invitation_list")
+            messages.error(request, "You cannot send a connection request to yourself")
+            return redirect("connection_list")
+
+        # Check if already connected
+        is_connected = Connection.objects.filter(
+            Q(user1=request.user, user2=receiver) | Q(user1=receiver, user2=request.user)
+        ).exists()
+        if is_connected:
+            messages.warning(request, f"You are already connected with @{receiver.username}.")
+            return redirect("connection_list")
+
+        # Check existing pending invite
+        existing_invite = Invitation.objects.filter(
+            sender=request.user, receiver=receiver, status='pending'
+        ).first()
+        if existing_invite:
+            messages.warning(request, f"Connection request to @{receiver.username} is already pending.")
+            return redirect("sent_invitations")
+
+        invitation = Invitation.objects.create(sender=request.user, receiver=receiver, message=message)
+
+        # Trigger real-time notification
+        try:
+            from notifications.services import create_notification
+            create_notification(
+                recipient=receiver,
+                actor=request.user,
+                verb='connection_request',
+                target=invitation,
+                target_url='/opportunities/invitations/',
+                preview=f"{request.user.username} sent you a connection request."
+            )
+        except Exception:
+            pass
+
+        messages.success(request, f"Connection request sent to @{receiver.username}!")
+        return redirect("sent_invitations")
+    return redirect("connection_list")
 
 
 @login_required
@@ -223,8 +256,89 @@ def connection_list(request):
 
 @login_required
 def invitation_list(request):
-    """Alias for connection_list to maintain backward compatibility."""
-    return connection_list(request)
+    """Received invitations view."""
+    user = request.user
+    raw_invites = Invitation.objects.filter(receiver=user).select_related(
+        'sender', 'sender__profile'
+    ).order_by('-created_at')
+
+    all_invites = []
+    for inv in raw_invites:
+        other = inv.sender
+        profile = getattr(other, 'profile', None)
+
+        if profile and getattr(profile, 'profile_image', None):
+            try:
+                avatar_url = profile.profile_image.url
+            except Exception:
+                avatar_url = f"https://ui-avatars.com/api/?name={other.username}&background=6366f1&color=ffffff&size=120"
+        else:
+            avatar_url = f"https://ui-avatars.com/api/?name={other.username}&background=6366f1&color=ffffff&size=120"
+
+        bio = profile.bio if profile and profile.bio else (profile.about if profile and profile.about else "")
+        raw_skills = profile.tech_stack if profile and profile.tech_stack else (profile.skills if profile and profile.skills else "")
+        skills_str = ", ".join([s.strip() for s in raw_skills.split(',') if s.strip()][:3])
+
+        inv.other_user = other
+        inv.other_profile_image_url = avatar_url
+        inv.other_profile_job_title = profile.job_title if profile and profile.job_title else "Software Developer"
+        inv.other_profile_skills = skills_str
+        inv.is_incoming = True
+        all_invites.append(inv)
+
+    total_count = len(all_invites)
+    pending_count = sum(1 for i in all_invites if i.status == 'pending')
+    accepted_count = sum(1 for i in all_invites if i.status == 'accepted')
+    rejected_count = sum(1 for i in all_invites if i.status in ['rejected', 'declined'])
+
+    # Filtering
+    q = request.GET.get('q', '').strip().lower()
+    status_filter = request.GET.get('status', 'all').lower()
+    sort_by = request.GET.get('sort', 'newest').lower()
+
+    filtered = []
+    for inv in all_invites:
+        if q:
+            match_name = q in (inv.other_user.get_full_name() or '').lower()
+            match_user = q in inv.other_user.username.lower()
+            match_msg = q in (inv.message or '').lower()
+            if not (match_name or match_user or match_msg):
+                continue
+
+        if status_filter == 'pending' and inv.status != 'pending':
+            continue
+        elif status_filter == 'accepted' and inv.status != 'accepted':
+            continue
+        elif status_filter in ['declined', 'rejected'] and inv.status not in ['rejected', 'declined']:
+            continue
+
+        filtered.append(inv)
+
+    if sort_by == 'name':
+        filtered.sort(key=lambda x: (x.other_user.get_full_name() or x.other_user.username).lower())
+    elif sort_by == 'oldest':
+        filtered.sort(key=lambda x: x.created_at)
+    else:  # newest
+        filtered.sort(key=lambda x: x.created_at, reverse=True)
+
+    paginator = Paginator(filtered, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    discover_users = _get_discover_users(user)
+
+    return render(request, "invitation_list.html", {
+        "invitations": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
+        "pending_count": pending_count,
+        "accepted_count": accepted_count,
+        "rejected_count": rejected_count,
+        "selected_query": q,
+        "selected_status": status_filter,
+        "selected_sort": sort_by,
+        "discover_users": discover_users,
+    })
 
 
 @login_required
@@ -436,8 +550,20 @@ def accept_invitation(request, pk):
             user1=invitation.sender,
             user2=invitation.receiver,
         )
-        messages.success(request, "You're now connected!")
-    return redirect("invitation_list")
+        try:
+            from notifications.services import create_notification
+            create_notification(
+                recipient=invitation.sender,
+                actor=request.user,
+                verb='connection_accepted',
+                target=invitation,
+                target_url='/opportunities/connections/',
+                preview=f"{request.user.username} accepted your connection request!"
+            )
+        except Exception:
+            pass
+        messages.success(request, f"You are now connected with @{invitation.sender.username}!")
+    return redirect("connection_list")
 
 
 @login_required
@@ -446,14 +572,94 @@ def reject_invitation(request, pk):
     if request.method == "POST":
         invitation.status = "rejected"
         invitation.save()
-        messages.warning(request, "Invitation rejected")
+        messages.info(request, "Connection request declined.")
     return redirect("invitation_list")
 
 
 @login_required
+def cancel_invitation(request, pk):
+    invitation = get_object_or_404(Invitation, id=pk, sender=request.user)
+    if request.method == "POST":
+        invitation.delete()
+        messages.success(request, "Connection request cancelled.")
+    return redirect("sent_invitations")
+
+
+def _get_discover_users(user):
+    connection_uids = list(Connection.objects.filter(
+        Q(user1=user) | Q(user2=user)
+    ).values_list('user1_id', 'user2_id'))
+    connected_ids = set()
+    for u1, u2 in connection_uids:
+        connected_ids.add(u1)
+        connected_ids.add(u2)
+    connected_ids.add(user.id)
+
+    discover = User.objects.exclude(id__in=connected_ids).select_related('profile').order_by('-date_joined')[:10]
+    for d_user in discover:
+        d_prof = getattr(d_user, 'profile', None)
+        if d_prof and getattr(d_prof, 'profile_image', None):
+            try:
+                d_user.avatar_url = d_prof.profile_image.url
+            except Exception:
+                d_user.avatar_url = f"https://ui-avatars.com/api/?name={d_user.username}&background=6366f1&color=ffffff&size=80"
+        else:
+            d_user.avatar_url = f"https://ui-avatars.com/api/?name={d_user.username}&background=6366f1&color=ffffff&size=80"
+        d_user.job_title = d_prof.job_title if d_prof and d_prof.job_title else "Developer"
+    return discover
+
+
+@login_required
 def sent_invitations(request):
-    invites = Invitation.objects.filter(sender=request.user).order_by('-created_at')
-    return render(request, "sent_invitations.html", {"invites": invites})
+    """Sent invitations view."""
+    user = request.user
+    raw_invites = Invitation.objects.filter(sender=user).select_related(
+        'receiver', 'receiver__profile'
+    ).order_by('-created_at')
+
+    all_invites = []
+    for inv in raw_invites:
+        other = inv.receiver
+        profile = getattr(other, 'profile', None)
+
+        if profile and getattr(profile, 'profile_image', None):
+            try:
+                avatar_url = profile.profile_image.url
+            except Exception:
+                avatar_url = f"https://ui-avatars.com/api/?name={other.username}&background=6366f1&color=ffffff&size=120"
+        else:
+            avatar_url = f"https://ui-avatars.com/api/?name={other.username}&background=6366f1&color=ffffff&size=120"
+
+        raw_skills = profile.tech_stack if profile and profile.tech_stack else (profile.skills if profile and profile.skills else "")
+        skills_str = ", ".join([s.strip() for s in raw_skills.split(',') if s.strip()][:3])
+
+        inv.other_user = other
+        inv.other_profile_image_url = avatar_url
+        inv.other_profile_job_title = profile.job_title if profile and profile.job_title else "Software Developer"
+        inv.other_profile_skills = skills_str
+        inv.is_incoming = False
+        all_invites.append(inv)
+
+    total_count = len(all_invites)
+    pending_count = sum(1 for i in all_invites if i.status == 'pending')
+    accepted_count = sum(1 for i in all_invites if i.status == 'accepted')
+    rejected_count = sum(1 for i in all_invites if i.status in ['rejected', 'declined'])
+
+    paginator = Paginator(all_invites, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    discover_users = _get_discover_users(user)
+
+    return render(request, "sent_invitations.html", {
+        "invitations": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
+        "pending_count": pending_count,
+        "accepted_count": accepted_count,
+        "rejected_count": rejected_count,
+        "discover_users": discover_users,
+    })
 
 
 @login_required

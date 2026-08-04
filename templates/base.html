@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}DevLink{% endblock %}</title>
 
-  <!-- Anti-FOUC: set default light theme -->
-  <script>(function(){document.documentElement.setAttribute('data-bs-theme','light');document.documentElement.setAttribute('data-theme','light');})();</script>
+  <!-- Anti-FOUC: set user theme preference before first paint -->
+  <script>(function(){try{var t=localStorage.getItem('dl-theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',t);document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <!-- Global site styles (layout, grid, cards) -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
   {% block extra_css %}{% endblock %}
   <!-- Navbar styles (loaded last for guaranteed precedence) -->
   <link rel="stylesheet" href="{% static 'css/navbar.css' %}">

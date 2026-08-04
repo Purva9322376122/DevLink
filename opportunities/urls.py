@@ -12,6 +12,7 @@ urlpatterns = [
     path('invitations/sent/', views.sent_invitations, name='sent_invitations'),
     path('invitation/<int:pk>/accept/', views.accept_invitation, name='accept_invitation'),
     path('invitation/<int:pk>/reject/', views.reject_invitation, name='reject_invitation'),
+    path('invitation/<int:pk>/cancel/', views.cancel_invitation, name='cancel_invitation'),
     path('<int:pk>/apply/', views.apply_opportunity, name='apply_opportunity'),
     path('<int:pk>/applications/', views.view_applications, name='view_applications'),
     # Opportunity owner — manages received applications

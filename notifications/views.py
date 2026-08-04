@@ -19,8 +19,8 @@ def notification_list(request):
 
 @login_required
 def notification_dropdown(request):
-    """Partial for the navbar notification dropdown (AJAX)."""
-    notifications = get_recent_notifications(request.user, limit=10)
+    """Partial for the navbar notification dropdown (AJAX) - minimal recent 4 notifications."""
+    notifications = get_recent_notifications(request.user, limit=4)
     return render(request, 'notifications/notification_dropdown.html', {
         'notifications': notifications,
         'unread_count': get_unread_count(request.user),

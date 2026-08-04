@@ -12,7 +12,7 @@
   --nav-primary: #2563eb;
 }
 
-/* Ensure the fixed navbar is solid white, elevated, and opaque */
+/* Ensure the fixed navbar is solid white in light theme, dark in dark theme */
 .dl-navbar {
   position: fixed !important;
   top: 0 !important;
@@ -21,17 +21,31 @@
   width: 100% !important;
   z-index: 10000 !important;
   height: 72px !important;
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  border-bottom: 1px solid #e5e7eb !important;
+  background: var(--nav-bg) !important;
+  background-color: var(--nav-bg) !important;
+  border-bottom: 1px solid var(--nav-border) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
   opacity: 1 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease !important;
 }
 
-[data-theme="dark"] .dl-navbar,
-[data-bs-theme="dark"] .dl-navbar {
+html[data-theme="dark"],
+html[data-bs-theme="dark"] {
+  --nav-bg: #0f172a;
+  --nav-border: #334155;
+  --nav-text: #f8fafc;
+  --nav-hover: #1e293b;
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --border: #334155;
+}
+
+html[data-theme="dark"] .dl-navbar,
+html[data-bs-theme="dark"] .dl-navbar {
   background: #0f172a !important;
   background-color: #0f172a !important;
   border-bottom-color: #334155 !important;

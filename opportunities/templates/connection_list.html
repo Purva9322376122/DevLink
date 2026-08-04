@@ -134,7 +134,7 @@
     {% if connections %}
       <div class="connections-grid">
         {% for item in connections %}
-        <article class="connection-card" data-aos="fade-up">
+        <article class="connection-card clickable-card" data-aos="fade-up" onclick="if(!event.target.closest('button, a, form, input, select')) { window.location.href='{% url 'accounts:profile' item.username %}'; }" style="cursor: pointer;">
           <!-- Card Header: Profile Picture, Name, Username, Role, Menu -->
           <div class="connection-card-header">
             <div class="connection-avatar-wrapper">

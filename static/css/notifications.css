@@ -1,8 +1,8 @@
 /* =========================================================================
-   DevLink Notifications CSS
-   Clean, Basic Notification Cards without Inner Divider Lines
+   DevLink Notifications CSS - Ultra-Minimal Space-Saving Dropdown
    ========================================================================= */
 
+/* Notification Cards (Full List Page) */
 .notif-opportunity-card .card-header {
   border-bottom: none !important;
   padding: 20px 24px 8px 24px !important;
@@ -57,4 +57,351 @@
   background-color: #2563eb;
   color: #ffffff;
   border-color: #2563eb;
+}
+
+/* =========================================================================
+   Minimal Dropdown Menu Panel (Navbar)
+   ========================================================================= */
+
+#notif-dropdown-container {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  width: auto !important;
+}
+
+/* Link Resets & Preventing Purple Visited Links */
+#notif-dropdown-container a,
+.notif-dropdown-panel a,
+#notif-dropdown-container a:visited,
+.notif-dropdown-panel a:visited {
+  text-decoration: none !important;
+  color: inherit !important;
+  outline: none !important;
+}
+
+.notif-dropdown-panel {
+  width: 310px;
+  max-width: calc(100vw - 24px);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+/* Dropdown Header */
+.notif-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.notif-header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-header-title {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+}
+
+.notif-header-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb !important;
+}
+
+.notif-mark-all-btn {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #2563eb !important;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.notif-mark-all-btn:hover {
+  background: rgba(37, 99, 235, 0.08) !important;
+  color: #1d4ed8 !important;
+}
+
+/* Scrollable Notifications Area */
+.notif-dropdown-list {
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.notif-dropdown-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notif-dropdown-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+/* Individual Notification Item Row (Compact) */
+.notif-dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  text-decoration: none !important;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s ease;
+  position: relative;
+}
+
+.notif-dropdown-item:last-child {
+  border-bottom: 0;
+}
+
+.notif-dropdown-item:hover {
+  background-color: #f8fafc !important;
+  text-decoration: none !important;
+}
+
+/* Unread Notification Highlight */
+.notif-dropdown-item.notif-unread {
+  background-color: #eff6ff !important;
+}
+
+.notif-dropdown-item.notif-unread:hover {
+  background-color: #e0edff !important;
+}
+
+/* Notification Icon Badge (Compact 26px) */
+.notif-icon-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+  margin-top: 1px;
+}
+
+/* Verb Specific Color Accents */
+.notif-icon-connection_request, .notif-icon-connection_accepted {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.notif-icon-new_message {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.notif-icon-application_received, .notif-icon-application_accepted {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+.notif-icon-application_rejected {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+/* Notification Item Content */
+.notif-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-item-title {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  line-height: 1.3 !important;
+  margin: 0 !important;
+  word-break: break-word;
+  text-decoration: none !important;
+}
+
+.notif-item-time {
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  color: #94a3b8 !important;
+  display: block;
+  margin-top: 2px;
+  text-decoration: none !important;
+}
+
+/* Unread Blue Dot Indicator */
+.notif-unread-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+/* Minimal Empty State */
+.notif-dropdown-empty {
+  padding: 20px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-empty-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.notif-empty-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 0 2px 0 !important;
+}
+
+.notif-empty-desc {
+  font-size: 11.5px !important;
+  color: #64748b !important;
+  margin: 0;
+  max-width: 220px;
+  line-height: 1.3;
+}
+
+/* Sticky Footer (Compact) */
+.notif-dropdown-footer {
+  padding: 6px 10px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: center;
+  position: sticky;
+  bottom: 0;
+}
+
+.notif-view-all-btn,
+.notif-view-all-btn:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #2563eb !important;
+  background: rgba(37, 99, 235, 0.05);
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+}
+
+.notif-view-all-btn:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] .notif-dropdown-panel,
+[data-bs-theme="dark"] .notif-dropdown-panel {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .notif-dropdown-header,
+[data-bs-theme="dark"] .notif-dropdown-header,
+[data-theme="dark"] .notif-dropdown-footer,
+[data-bs-theme="dark"] .notif-dropdown-footer {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="dark"] .notif-dropdown-item,
+[data-bs-theme="dark"] .notif-dropdown-item {
+  border-bottom-color: #334155 !important;
+}
+
+[data-theme="dark"] .notif-dropdown-item:hover,
+[data-bs-theme="dark"] .notif-dropdown-item:hover {
+  background-color: #334155 !important;
+}
+
+[data-theme="dark"] .notif-dropdown-item.notif-unread,
+[data-bs-theme="dark"] .notif-dropdown-item.notif-unread {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+}
+
+[data-theme="dark"] .notif-dropdown-item.notif-unread:hover,
+[data-bs-theme="dark"] .notif-dropdown-item.notif-unread:hover {
+  background-color: rgba(37, 99, 235, 0.25) !important;
+}
+
+[data-theme="dark"] .notif-item-title,
+[data-bs-theme="dark"] .notif-item-title,
+[data-theme="dark"] .notif-header-title,
+[data-bs-theme="dark"] .notif-header-title,
+[data-theme="dark"] .notif-empty-title,
+[data-bs-theme="dark"] .notif-empty-title {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .notif-empty-icon,
+[data-bs-theme="dark"] .notif-empty-icon {
+  background: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .notif-view-all-btn,
+[data-bs-theme="dark"] .notif-view-all-btn {
+  background: rgba(37, 99, 235, 0.18) !important;
+  color: #60a5fa !important;
+}
+
+[data-theme="dark"] .notif-view-all-btn:hover,
+[data-bs-theme="dark"] .notif-view-all-btn:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
 }

@@ -1,44 +1,67 @@
 {% load static notification_tags %}
-<div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-  <span class="fw-semibold small">Notifications
-    {% if unread_count %}<span class="badge bg-danger rounded-pill ms-1">{{ unread_count }}</span>{% endif %}
-  </span>
-  {% if unread_count %}
-  <button class="btn btn-link btn-sm p-0 text-decoration-none small"
-          hx-post="{% url 'notifications:mark_all_read' %}"
-          onclick="markAllRead(event)">Mark all read</button>
-  {% endif %}
-</div>
 
-<div style="max-height:360px;overflow-y:auto;">
-  {% for notif in notifications %}
-  <a href="{{ notif.target_url }}"
-     class="d-flex align-items-start gap-2 px-3 py-2 text-decoration-none border-bottom notification-item {% if not notif.is_read %}bg-primary bg-opacity-10{% endif %}"
-     data-id="{{ notif.id }}"
-     onclick="markRead(event, {{ notif.id }})">
-    <div class="flex-shrink-0 mt-1">
-      <span class="badge rounded-pill bg-secondary-subtle text-secondary p-1">
-        <i class="bi {{ notif.verb|notif_icon }} fs-6"></i>
-      </span>
+<div class="notif-dropdown-panel">
+
+  <!-- DROPDOWN HEADER -->
+  <div class="notif-dropdown-header">
+    <div class="notif-header-title-group">
+      <h3 class="notif-header-title">Notifications</h3>
+      {% if unread_count %}
+        <span class="notif-header-badge">{{ unread_count }} new</span>
+      {% endif %}
     </div>
-    <div class="flex-grow-1 min-w-0">
-      <p class="mb-0 small text-body-emphasis text-truncate">{{ notif.preview }}</p>
-      <span class="text-muted" style="font-size:.72rem;">{{ notif.created_at|timesince }} ago</span>
-    </div>
-    {% if not notif.is_read %}
-    <span class="badge bg-primary rounded-circle p-1 flex-shrink-0 mt-1" style="width:8px;height:8px;"></span>
+
+    {% if unread_count %}
+      <button type="button" class="notif-mark-all-btn" onclick="markAllRead(event)" title="Mark all as read">
+        <i class="bi bi-check2-all"></i> Mark all as read
+      </button>
     {% endif %}
-  </a>
-  {% empty %}
-  <div class="text-center text-muted py-4 small">
-    <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-50"></i>
-    No notifications yet
   </div>
-  {% endfor %}
-</div>
 
-<div class="px-3 py-2 border-top text-center">
-  <a href="{% url 'notifications:list' %}" class="small text-primary text-decoration-none">
-    View all notifications
-  </a>
+  <!-- SCROLLABLE NOTIFICATIONS LIST -->
+  <div class="notif-dropdown-list">
+    {% for notif in notifications %}
+      <a href="{{ notif.target_url }}" 
+         class="notif-dropdown-item {% if not notif.is_read %}notif-unread{% endif %}"
+         data-id="{{ notif.id }}"
+         onclick="markRead(event, {{ notif.id }})">
+        
+        <!-- ICON BADGE -->
+        <div class="notif-icon-circle notif-icon-{{ notif.verb }}">
+          <i class="bi {{ notif.verb|notif_icon }}"></i>
+        </div>
+
+        <!-- ITEM BODY -->
+        <div class="notif-item-body">
+          <p class="notif-item-title">{{ notif.preview }}</p>
+          <span class="notif-item-time">
+            <i class="bi bi-clock"></i> {{ notif.created_at|timesince }} ago
+          </span>
+        </div>
+
+        <!-- UNREAD INDICATOR DOT -->
+        {% if not notif.is_read %}
+          <span class="notif-unread-dot" title="Unread notification"></span>
+        {% endif %}
+      </a>
+    {% empty %}
+      <!-- EMPTY STATE -->
+      <div class="notif-dropdown-empty">
+        <div class="notif-empty-icon" aria-hidden="true">
+          <i class="bi bi-bell-slash"></i>
+        </div>
+        <h4 class="notif-empty-title">No notifications yet</h4>
+        <p class="notif-empty-desc">When you receive connection requests, messages, or application updates, they will appear here.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- STICKY FOOTER -->
+  <div class="notif-dropdown-footer">
+    <a href="{% url 'notifications:list' %}" class="notif-view-all-btn">
+      <span>View All Notifications</span>
+      <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+
 </div>
