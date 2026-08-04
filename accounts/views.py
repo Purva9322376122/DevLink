@@ -26,7 +26,7 @@ logger = logging.getLogger('devlink')
 
 def signup_view(request):
     if request.user.is_authenticated:
-        return redirect('accounts:my_profile')
+        return redirect('dashboard:dashboard')
 
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -35,27 +35,21 @@ def signup_view(request):
 
         try:
             user = create_user(username=username, email=email, password=password)
+            user.is_active = True
+            user.save(update_fields=['is_active'])
         except ValueError as exc:
             messages.error(request, str(exc))
             return redirect('accounts:signup')
 
-        # Dispatch activation email asynchronously via Celery.
-        # Import here to avoid circular imports at module load.
         try:
             from .tasks import send_activation_email
             send_activation_email.delay(user.id)
-            messages.info(
-                request,
-                "Account created! Check your email to activate your account."
-            )
-        except Exception:
-            # Celery may not be running in development — activate immediately.
-            user.is_active = True
-            user.save(update_fields=['is_active'])
-            login(request, user)
-            return redirect('accounts:my_profile')
+        except Exception as e:
+            logger.warning(f"Async email notification skipped: {e}")
 
-        return redirect('accounts:login')
+        login(request, user)
+        messages.success(request, f"Welcome to DevLink, {user.username}!")
+        return redirect('dashboard:dashboard')
 
     return render(request, "signup.html")
 
