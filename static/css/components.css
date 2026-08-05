@@ -49,3 +49,40 @@
 
 /* Accessible focus for interactive elements */
 a:focus,.btn:focus,.dl-btn:focus{outline:3px solid rgba(37,99,235,0.12);outline-offset:2px}
+
+/* ============================================
+   GLOBAL STACKING & OVERFLOW REGISTRATION
+   ============================================ */
+
+/* Guarantee navbar is stacked below popups and modals */
+.dl-navbar,
+header.dl-navbar {
+  z-index: 50 !important;
+  overflow: visible !important;
+}
+
+.dl-container,
+.dl-nav-actions,
+.dl-dropdown {
+  overflow: visible !important;
+}
+
+/* Modals, Backdrops, Popups, Dropdowns & Toasts always render above navbar */
+.modal-backdrop,
+.custom-modal-backdrop {
+  z-index: 9998 !important;
+}
+
+.modal,
+.modal-dialog,
+.custom-modal-dialog,
+.custom-modal-pixel-perfect,
+.popover,
+.tooltip,
+.toast,
+.toast-container,
+.login-toast-popup,
+.dl-dropdown-menu,
+.profile-menu {
+  z-index: 9999 !important;
+}

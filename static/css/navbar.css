@@ -19,7 +19,8 @@
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
-  z-index: 10000 !important;
+  z-index: 50 !important;
+  overflow: visible !important;
   height: 72px !important;
   background: var(--nav-bg) !important;
   background-color: var(--nav-bg) !important;
