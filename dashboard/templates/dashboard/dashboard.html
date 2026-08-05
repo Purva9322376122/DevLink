@@ -282,50 +282,12 @@
           </p>
         </div>
 
-        <div class="action-feature-cards">
-          <!-- Card 1: Ask Problem -->
-          <a href="{% url 'create_problem' %}" class="action-feature-card card-ask-problem" aria-label="Ask Problem - Get help from the community.">
-            <div class="card-icon-container icon-purple">
-              <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-            </div>
-            <div class="card-content-wrapper">
-              <div class="card-title-row">
-                <h3 class="card-title-text">Ask Problem</h3>
-                <span class="card-arrow-btn arrow-purple" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                  </svg>
-                </span>
-              </div>
-              <p class="card-desc-text">Get help from the community.</p>
-            </div>
+        <div class="welcome-actions-group">
+          <a href="{% url 'create_problem' %}" class="btn btn-primary rounded-pill px-3 py-2 fw-semibold">
+            <i class="bi bi-plus-circle-fill me-1"></i>Ask Problem
           </a>
-
-          <!-- Card 2: Create Opportunity -->
-          <a href="{% url 'create_opportunity' %}" class="action-feature-card card-create-opportunity" aria-label="Create Opportunity - Post opportunities and connect with talent.">
-            <div class="card-icon-container icon-blue">
-              <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-              </svg>
-            </div>
-            <div class="card-content-wrapper">
-              <div class="card-title-row">
-                <h3 class="card-title-text">Create Opportunity</h3>
-                <span class="card-arrow-btn arrow-blue" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                  </svg>
-                </span>
-              </div>
-              <p class="card-desc-text">Post opportunities and connect with talent.</p>
-            </div>
+          <a href="{% url 'create_opportunity' %}" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold">
+            <i class="bi bi-briefcase-fill me-1"></i>Create Opportunity
           </a>
         </div>
       </div>
