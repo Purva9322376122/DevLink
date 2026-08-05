@@ -20,9 +20,17 @@
     <p class="auth-sub text-center">Sign in to continue to DevLink</p>
 
     {% if messages %}
-      <div class="messages">
+      <div class="messages mb-3">
         {% for message in messages %}
           <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if form and form.non_field_errors %}
+      <div class="message error mb-3" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 10px 14px; border-radius: 8px; font-size: 0.875rem; font-weight: 500;">
+        {% for error in form.non_field_errors %}
+          <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
         {% endfor %}
       </div>
     {% endif %}

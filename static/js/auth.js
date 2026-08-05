@@ -43,26 +43,18 @@
     applyTheme(cur === 'dark' ? 'light' : 'dark');
   }));
 
-  // Button loading state
+  // Button loading state (shows spinner, retains clickability so browser forms process cleanly)
   document.querySelectorAll('form').forEach(form=>{
     form.addEventListener('submit', function(e){
       const btn = form.querySelector('button[type=submit]');
       if(btn){
-        const txt = btn.getAttribute('data-loading-text') || 'Loading...';
-        btn.disabled = true;
+        const txt = btn.getAttribute('data-loading-text') || '<i class="bi bi-arrow-repeat spinner-border-sm me-1 animate-spin" aria-hidden="true"></i> Logging in...';
         btn.dataset.prevText = btn.innerHTML;
         btn.innerHTML = txt;
-      }
-    });
-  });
-
-  // Simple client-side validation visual feedback
-  document.querySelectorAll('.form-input').forEach(input=>{
-    input.addEventListener('input', ()=>{
-      if(!input.checkValidity()){
-        input.classList.remove('valid'); input.classList.add('invalid');
-      } else {
-        input.classList.remove('invalid'); input.classList.add('valid');
+        // Reset button state if user navigates back or submission is cancelled
+        window.addEventListener('pageshow', function() {
+          if (btn.dataset.prevText) btn.innerHTML = btn.dataset.prevText;
+        }, { once: true });
       }
     });
   });
