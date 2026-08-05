@@ -35,7 +35,7 @@
         <label for="id_username" class="dl-form-label">Email or Username</label>
         <div class="input-wrap">
           <span class="input-icon"><i class="bi bi-at"></i></span>
-          <input id="id_username" name="username" type="text" class="dl-form-input form-input" required aria-required="true" aria-label="Email or Username" placeholder="you@example.com or username" value="{{ request.POST.username|default_if_none:'' }}">
+          <input id="id_username" name="username" type="text" class="dl-form-input form-input" required aria-required="true" aria-label="Email or Username" placeholder="you@example.com or username" value="{{ request.POST.username|default_if_none:'' }}" autocomplete="username">
         </div>
         {% if form and form.username.errors %}
           <div class="input-error">{{ form.username.errors.0 }}</div>
@@ -46,7 +46,7 @@
         <label for="id_password" class="dl-form-label">Password</label>
         <div class="input-wrap">
           <span class="input-icon"><i class="bi bi-lock"></i></span>
-          <input id="id_password" name="password" type="password" class="dl-form-input form-input password-field" required aria-required="true" aria-label="Password" placeholder="Enter your password">
+          <input id="id_password" name="password" type="password" class="dl-form-input form-input password-field" required aria-required="true" aria-label="Password" placeholder="Enter your password" autocomplete="current-password">
           <button type="button" class="password-toggle dl-icon-btn" aria-label="Toggle password visibility" data-target="#id_password"><i class="bi bi-eye-slash" aria-hidden="true"></i></button>
         </div>
         {% if form and form.password.errors %}

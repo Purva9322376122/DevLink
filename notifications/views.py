@@ -41,3 +41,10 @@ def mark_all_read_view(request):
     """Mark all notifications as read (AJAX POST)."""
     count = mark_all_read(request.user)
     return JsonResponse({'status': 'ok', 'marked': count, 'unread_count': 0})
+
+
+@login_required
+def unread_count_view(request):
+    """Return JSON unread notification count for HTTP polling fallback."""
+    return JsonResponse({'unread_count': get_unread_count(request.user)})
+

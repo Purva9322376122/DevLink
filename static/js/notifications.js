@@ -1,42 +1,65 @@
 /**
- * DevLink — real-time notification WebSocket client.
+ * DevLink — real-time notification client.
  *
  * Connects to ws(s)://<host>/ws/notifications/
  * Handles:
  *   notification.new          → prepend item to dropdown, show toast
  *   notification.count_update → update bell badge
  *
- * NOTE: WebSocket requires the ASGI server (Daphne) to be running.
- * When using plain `runserver` (WSGI), the connection will fail silently
- * after a few retries — this is expected in development.
+ * Fallback:
+ *   If WebSockets are unavailable or server runs on standard WSGI (manage.py runserver),
+ *   it cleanly switches to HTTP polling (/notifications/unread-count/) every 30 seconds
+ *   without logging repeated console errors.
  */
 (function () {
   const badge = document.getElementById('notif-badge');
   const dropdownContainer = document.getElementById('notif-dropdown-container');
+
+  // Exit cleanly if notification UI elements are missing
+  if (!badge && !dropdownContainer) return;
+
   const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
   const wsUrl = `${protocol}://${location.host}/ws/notifications/`;
 
   let socket = null;
-  let reconnectDelay = 2000;
-  let failCount = 0;
-  const MAX_FAILURES = 3;  // Stop retrying after 3 consecutive failures in dev
+  let usePollingFallback = false;
+  let pollInterval = null;
+
+  function startPolling() {
+    if (pollInterval) return;
+    usePollingFallback = true;
+    fetchUnreadCount();
+    pollInterval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+  }
+
+  function fetchUnreadCount() {
+    fetch('/notifications/unread-count/', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && typeof data.unread_count === 'number') {
+          updateBadge(data.unread_count);
+        }
+      })
+      .catch(() => {}); // Suppress network errors
+  }
 
   function connect() {
-    // Don't retry indefinitely — stop after MAX_FAILURES to avoid console spam
-    if (failCount >= MAX_FAILURES) {
-      return;
-    }
+    if (usePollingFallback) return;
 
     try {
       socket = new WebSocket(wsUrl);
     } catch (e) {
-      // WebSocket constructor itself threw — environment doesn't support it
+      startPolling();
       return;
     }
 
     socket.onopen = function () {
-      reconnectDelay = 2000;
-      failCount = 0;  // Reset on successful connection
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
     };
 
     socket.onmessage = function (e) {
@@ -54,22 +77,16 @@
       }
     };
 
-    socket.onclose = function (event) {
-      // Code 4001 = unauthenticated, 1000 = normal close — don't retry
-      if (event.code === 4001 || event.code === 1000) {
-        return;
-      }
-      failCount++;
-      if (failCount < MAX_FAILURES) {
-        setTimeout(connect, Math.min(reconnectDelay, 30000));
-        reconnectDelay = Math.min(reconnectDelay * 2, 30000);
-      }
-      // else: silently stop — ASGI server is likely not running (dev mode)
+    socket.onclose = function () {
+      // On WebSocket close/failure (e.g. 404 on WSGI dev server), gracefully fall back to polling
+      startPolling();
     };
 
     socket.onerror = function () {
-      // Let onclose handle the retry logic
-      socket.close();
+      if (socket) {
+        try { socket.close(); } catch (e) {}
+      }
+      startPolling();
     };
   }
 
@@ -102,7 +119,7 @@
     fetch('/notifications/dropdown/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(r => r.ok ? r.text() : null)
       .then(html => { if (html) dropdownContainer.innerHTML = html; })
-      .catch(() => {}); // Ignore network errors silently
+      .catch(() => {});
   }
 
   // Mark single notification read via AJAX
@@ -115,7 +132,7 @@
 
   // Mark all read via AJAX
   window.markAllRead = function (event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     fetch('/notifications/mark-all-read/', {
       method: 'POST',
       headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest' },
